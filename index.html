@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Knitverse · Hybrid Storyboard v13.1 (FINAL UI FIX)</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script> 
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+KR:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0b0c10; --panel:#10151b; --card:#141c26; --text:#eaf2ff; --muted:#a9b7c6; --blue:#35d0ff; --gold:#ffd54f; --line:#223244; }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 800px at 80% -10%, #16212c 0%, var(--bg) 55%);color:var(--text);
+       font:14px/1.6 'Noto Sans KR', system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+  header{position:sticky;top:0;z-index:20;background:rgba(10,14,20,.85);backdrop-filter:blur(8px);border-bottom:1px solid #162433;
+         display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px}
+  .brand{font-family:'Orbitron';letter-spacing:.14em;color:#35d0ff;font-weight:800;text-transform:uppercase;text-shadow:0 0 10px #35d0ff77}
+  .wrap{display:grid;grid-template-columns:400px 1fr;gap:14px;padding:14px}
+  @media(max-width:1400px){.wrap{grid-template-columns:1fr}}
+  aside{background:var(--panel);border:1px solid #1b2a3a;border-radius:14px;padding:12px;overflow-y:auto;max-height:calc(100vh - 28px - 48px)}
+  .section-title{margin:6px 0 8px;font-weight:800;color:#d6e6ff}
+  .flow-tools{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .flow-list{display:grid;gap:8px}
+  .flow{background:linear-gradient(180deg,#0f141b,#0f1822);border:1px solid #203044;border-radius:12px;padding:10px;cursor:grab;position:relative}
+  .flow.active{border-color:var(--gold);box-shadow:0 0 0 2px #ffd54f33}
+  .flow.drag-over{outline:2px dashed #35d0ff}
+  .flow .reord{position:absolute;top:8px;right:8px;font-size:10px;color:#96b}
+  /* V6.0: 플로우 목록의 단계 수 표시 제거를 위해 meta 스타일 숨김 */
+  .meta{color:#9eb0c6;font-size:12px;line-height:1.4; display: none;} 
+  .meta-content{min-height:24px}
+  .picker{display:grid;gap:8px;background:#0f141b;border:1px solid #203044;border-radius:12px;padding:10px;margin-top:10px}
+  input[type="text"]{width:100%;padding:8px;border-radius:8px;border:1px solid #223244;background:#0b1219;color:#eaf2ff;font-family:'Roboto Mono'}
+  .radio{display:flex;gap:12px;align-items:center;margin:6px 0 2px}
+  .small{font-size:12px;color:#9fb0c6}
+  
+  /* V13.1: 관리자 모드가 아닐 때는 편집 버튼을 숨깁니다. */
+  .admin-only { display: none !important; }
+
+  /* 썸네일 영역 */
+  .thumbs-section{margin-top:16px; padding-top:16px; border-top:1px solid var(--line);}
+  .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:8px}
+  .thumb{border:1px solid var(--line);border-radius:10px;padding:6px;background:#0b1219;text-align:center;position:relative;cursor:pointer}
+  .thumb.active{border-color:var(--blue);box-shadow:0 0 0 2px #35d0ff33;}
+  .thumb[draggable="true"]{cursor:grab}
+  .thumb.drag-over{outline:2px dashed #35d0ff}
+  .thumb img{max-width:100%;max-height:68px;border-radius:6px;display:block;margin:0 auto 6px}
+  .thumb .cap{font-size:11px;color:#cfe2ff}
+  .thumb .del{position:absolute;top:6px;right:6px;background:#150e0e;border:1px solid #4a2020;color:#ff9b9b;border-radius:8px;font-size:11px;padding:2px 6px;cursor:pointer;z-index:10}
+  
+  main{background:var(--panel);border:1px solid #1b2a3a;border-radius:14px;padding:0;overflow:hidden}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border-bottom:1px solid #192737}
+  .crumbs{color:#b9c7d8;font-size:12px}
+  .controls{display:flex;gap:8px;align-items:center;}
+  .btn{background:#0f141b;border:1px solid #223244;color:#eaf2ff;padding:8px 12px;border-radius:10px;cursor:pointer;flex-shrink:0}
+  .btn.primary{border-color:var(--gold);color:#111;background:var(--gold);font-weight:800}
+  .btn.danger{border-color:#4a2020;color:#ff9b9b;background:#150e0e;}
+  
+  /* V6.0: 이미지 선택 버튼 강조 스타일 */
+  .btn.asset-primary{
+      background: #ff9800; /* 주황색 배경 */
+      border-color: #ffb74d; /* 밝은 주황색 테두리 */
+      color: #111; /* 진한 텍스트 */
+      font-weight: 800; 
+      box-shadow: 0 0 8px #ff980044;
+  }
+  
+  .stage{padding:14px}
+  .unified-stage{display:grid;grid-template-columns:1fr 1fr;gap:14px;} 
+  @media(max-width:1400px){.unified-stage{grid-template-columns:1fr}}
+  .screen-panel{position:relative;background:linear-gradient(180deg,#0f141b,#101a24);border:1px solid #223244;border-radius:12px;padding:14px;min-height:480px;box-shadow:0 14px 44px #0008;height:100%}
+  .stage-wrap{display:grid;grid-template-rows:minmax(480px, auto) 1fr;gap:14px;}
+  
+  /* Structure UI */
+  .grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
+  .card{position:relative;background:#182330;border-left:4px solid var(--blue);border-radius:8px;padding:10px 12px;transition:all .1s; cursor:grab;}
+  .card.dragging{ opacity: 0.4; } 
+  .card.drag-over{ outline: 2px dashed var(--gold); }
+  .card:hover{border-left-color:var(--gold);background:#1d2938}
+  .card strong{color:var(--blue);font-size:12px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px}
+  .card[data-slot*="link"] strong{color:#c7ff35} 
+  .card[data-slot*="metric"] strong{color:#ff9933} 
+  .meta-content{color:var(--text);font-size:14px;font-weight:600;line-height:1.4;min-height:20px}
+  
+  /* HOME (제목) 및 설명 편집 가능 스타일 */
+  h2{margin-top:0;font-size:1.6em;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px;color:var(--gold);cursor:pointer}
+  .struct-desc{color:#d6e6ff;font-size:14px;line-height:1.5;margin-bottom:20px;cursor:pointer}
+  
+  .progress{height:8px;background:#0c1219;border:1px solid #1e2b3a;border-radius:999px;overflow:hidden;margin:8px 0 0}
+  .bar{height:100%;background:linear-gradient(90deg,#35d0ff,#ffd54f);width:0%}
+  
+  iframe{width:100%;height:100%;min-height:540px;border:1px solid #223244;border-radius:12px;background:#0b0c10}
+  .imgStageWrap{background:linear-gradient(180deg,#0f141b,#0f1721);border:1px solid #203044;border-radius:12px;padding:10px;height:100%;}
+  /* V5.4: Live 이미지 툴바 및 핀 버튼 영역 */
+  .imgTools{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;padding: 0 4px;} 
+  /* V5.4: 스크롤바 방지 CSS 강화 */
+  .imgBoard{position:relative;display:flex;align-items:center;justify-content:center;min-height:540px;background:#0b0c10;border:1px dashed #234;border-radius:12px;
+            max-width:100%; max-height:100%; overflow:hidden;} /* overflow:hidden 추가 */
+  .imgBoard img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px;display:block;object-fit:contain;}
+  
+  .pinLayer{position:absolute;inset:0;pointer-events:none}
+  .pin{position:absolute;transform:translate(-50%,-50%);background:#ffd54f;color:#111;border:2px solid #111;border-radius:999px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;pointer-events:auto;cursor:pointer}
+  .pin:hover{box-shadow:0 0 0 4px #ffd54f33}
+  .pinNote{position:absolute;transform:translate(8px,-50%);background:#141c26;color:#eaf2ff;border:1px solid #223244;border-radius:8px;padding:6px;min-width:160px;max-width:260px;font-size:12px}
+  .hint{font-size:12px;color:#9fb0c6}
+  
+  /* Structure 툴바: 단계 관리 버튼 통합 */
+  .structTools{position:relative;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line);}
+  .slot-tools{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">KNITVERSE · Hybrid Storyboard V13.1 (Stable)</div>
+</header>
+<div class="wrap" id="mainWrapper">
+  <aside>
+    <div class="section-title">플로우 선택 (드래그로 순서 변경)</div>
+    <div class="flow-tools admin-only">
+        <button class="btn" id="btnAddFlow">플로우 추가</button>
+        <button class="btn" id="btnRenameFlow">이름 변경</button>
+        <button class="btn danger" id="btnDeleteFlow">삭제</button>
+    </div>
+    <div class="flow-list" id="flowList"></div>
+
+    <div class="section-title" style="margin-top:16px">Live Demo 소스</div>
+    <div class="picker admin-only">
+      <label>Iframe (HTML) 파일 경로/이름 입력</label>
+      <div id="srcIframeBox">
+        <input id="srcText" type="text" placeholder="예: knitverse_mvp_skin_pro.html 또는 ./sub/app.html">
+        <button class="btn" id="applySrc">적용</button>
+        <div class="small">또는 파일 선택 →</div>
+        <input id="srcFile" type="file" accept=".html,.htm">
+        <div class="small" id="srcStatus">현재: 연결되지 않음</div>
+      </div>
+    </div>
+    
+    <div class="thumbs-section admin-only">
+        <div class="section-title">단계별 이미지 삽입 (Step Images)</div>
+        <div class="small">이미지를 여기에 업로드하면 자동으로 이미지 모드로 전환됩니다.</div>
+        <div class="imgTools" style="padding: 10px 0;">
+            <button class="btn asset-primary" id="btnPickImages">이미지 선택</button>
+            <button class="btn" id="btnAssignFromCurrent">현재 단계부터 재할당</button>
+            <button class="btn danger" id="btnClearMap">이 플로우 매핑 초기화</button>
+            <input id="imgFiles" type="file" accept="image/*" multiple style="display:none">
+            <div class="small" id="imgInfo" style="flex-basis: 100%;"></div>
+        </div>
+        
+        <div class="thumbs" id="imgList"></div>
+        <div class="small">드래그앤드롭으로 이미지 순서 변경 가능. 썸네일 클릭 시 해당 단계로 이동.</div>
+    </div>
+
+    <div class="thumbs-section">
+        <div class="section-title">작업 저장 / 불러오기 (JSON)</div>
+        <label class="small admin-only" style="margin-top: 8px;">저장할 파일명 (확장자 제외)</label>
+        <input id="saveFileName" type="text" placeholder="예: knitverse_project_final" style="margin-bottom: 8px;">
+        
+        <button class="btn primary" id="btnExportWork">작업 저장 (JSON)</button> 
+
+        <div style="height: 10px;"></div>
+        <button class="btn admin-only" id="btnImportWork">작업 불러오기 (파일 선택)</button>
+        <input id="workFile" type="file" accept=".json" style="display:none">
+        <div class="small">저장된 JSON 파일을 불러와 작업 환경을 복원합니다.</div>
+    </div>
+    
+  </aside>
+  <main id="mainContent">
+    <div class="toolbar">
+      <div class="crumbs" id="crumbs">HOME</div>
+      <div class="controls">
+        <button class="btn" id="btnExportImage">화면 캡처 (PNG)</button> 
+        <button class="btn" id="btnPrev">← 이전</button>
+        <button class="btn primary" id="btnNext">다음 →</button>
+      </div>
+    </div>
+
+    <div class="stage unified-stage">
+      
+      <div id="structPanel" class="screen-panel">
+        <div class="structTools admin-only">
+          <button class="btn" id="btnStepAdd">단계 추가</button>
+          <button class="btn" id="btnStepClone">현재 단계 복제</button>
+          <button class="btn" id="btnStepRename">이름 변경</button>
+          <button class="btn danger" id="btnStepDelete">단계 삭제</button>
+          <div style="flex-basis:100%; height:8px;"></div>
+          <label class="small"><input type="checkbox" id="structPinMode"> 핀 추가</label> 
+          <button class="btn" id="btnStructClearPins">핀 삭제</button>
+        </div>
+        <div id="structBody"></div>
+        <div class="pinLayer" id="structPinLayer"></div>
+      </div>
+
+      <div class="stage-wrap">
+        <div id="iframePane" class="imgStageWrap" style="display:none">
+          <div class="imgTools admin-only">
+            <span class="hint">Live Demo (Iframe) 영역입니다. (Step Images가 우선입니다.)</span>
+          </div>
+          <iframe id="liveFrame"></iframe>
+          <div class="hint">해시 내비(#home/#shop/#classes/#mypage)로 스텝 이동에 맞춰 연동합니다.</div>
+        </div>
+        <div id="imagesPane" class="imgStageWrap" style="display:none">
+          <div class="imgTools admin-only">
+            <label><input type="checkbox" id="pinMode"> 핀 추가</label>
+            <button class="btn" id="btnClearPins">핀 삭제</button>
+            <span class="hint">이미지 위를 클릭하면 핀과 설명을 추가할 수 있어요.</span>
+          </div>
+          <div class="imgBoard" id="imgBoard">
+            <img id="stepImg" alt="Step image">
+            <div class="pinLayer" id="pinLayer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress" style="margin-top:14px"><div class="bar" id="bar"></div></div>
+    <footer id="footer"></footer>
+  </main>
+</div>
+
+<script>
+let isAdminMode = false;
+// V13.1: 관리자 모드 확인 및 비밀번호 설정
+function checkAdminMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+        const password = prompt("관리자 모드 접속을 위해 비밀번호를 입력해주세요."); 
+        if (password === 'knitverse2025') { 
+            isAdminMode = true;
+            // 모든 .admin-only 클래스의 display: none을 해제합니다.
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = 'flex'; 
+                if (el.classList.contains('btn') || el.tagName === 'BUTTON' || el.tagName === 'INPUT' || el.tagName === 'LABEL') {
+                    el.style.display = 'inline-flex';
+                }
+            });
+            // 특수 케이스 복구
+            document.querySelectorAll('.flow-tools, .imgTools, .structTools').forEach(el => { el.style.display = 'flex'; });
+            document.querySelectorAll('.btn').forEach(el => { if(el.parentElement.classList.contains('flow-tools')) el.style.display = 'inline-block'; });
+
+            console.log("관리자 모드가 활성화되었습니다.");
+        } else {
+            alert("비밀번호가 틀렸습니다. 읽기 전용 모드로 전환됩니다.");
+            const newUrl = window.location.href.split('?')[0];
+            history.replaceState(null, '', newUrl);
+        }
+    }
+}
+</script>
+
+
+<script>
+/* =========================
+   V8.0/V13.1 핵심 로직 시작 (LZ-String 압축 기반)
+========================= */
+const $ = id => document.getElementById(id);
+const LZ = window.LZString; 
+
+/* =========================
+   플로우 정의 (5개) 
+========================= */
+const BASE_FLOWS=[
+ {key:'fan',     title:'팬 · 구매 플로우', map:['home','shop','product','checkout','done'], 
+  steps:[
+   {title:'HOME',body:'히어로 배너에서 상품 진입', slots:[{key:'core', name:'핵심 요소', content:'CTA · 사용자 목표 · 성공 시그널'},{key:'link', name:'연결', content:'쇼핑 리스트로 이동'},{key:'metric', name:'메트릭', content:'Home to Shop 클릭률'}]},
+   {title:'SHOP',body:'트렌딩 상품 리스트', slots:[{key:'core', name:'상품 리스트 핵심', content:'상품 리스트 핵심'},{key:'link', name:'상품 상세로 이동', content:'상품 상세로 이동'},{key:'metric', name:'상품 조회율', content:'상품 조회율'}]},
+   {title:'상세',body:'상품 상세 페이지', slots:[{key:'core', name:'상품 상세 핵심', content:'상품 상세 핵심'},{key:'link', name:'체크아웃으로 이동', content:'체크아웃으로 이동'},{key:'metric', name:'장바구니 담기율', content:'장바구니 담기율'}]},
+   {title:'체크아웃',body:'결제 요약 화면', slots:[{key:'core', name:'결제 핵심', content:'결제 핵심'},{key:'link', name:'주문 완료', content:'주문 완료'},{key:'metric', name:'결제 성공률', content:'결제 성공률'}]},
+   {title:'완료',body:'주문 완료', slots:[{key:'core', name:'완료 핵심', content:'완료 핵심'},{key:'link', name:'마이페이지로 이동', content:'마이페이지로 이동'},{key:'metric', name:'재방문 유도', content:'재방문 유도'}]}
+  ]},
+ {key:'rookie',  title:'루키 · 성장 플로우', map:['home','apply','klgc','upload','publish'], steps:[{title:'HOME',body:'APPLY 클릭'},{title:'Apply Form',body:'아티스트 지원 폼'},{title:'K-LGC',body:'4주 커리큘럼 단계'},{title:'Upload',body:'상품 업로드'},{title:'Publish',body:'상품 공개 완료'}]},
+ {key:'learner', title:'학습자 · 클래스 플로우', map:['home','classes','detail','enroll','play'], steps:[{title:'HOME',body:'클래스 탭 클릭'},{title:'Class List',body:'강의 목록'},{title:'Detail',body:'강의 상세 설명'},{title:'Enroll',body:'수강 등록'},{title:'Player',body:'강의 재생'}]},
+ {key:'creator', title:'액티브/마스터 작가 플로우', map:['home','classes','create','sell','legacy'], steps:[{title:'HOME',body:'MY PAGE에서 크리에이터 허브 진입'},{title:'클래스 개설',body:'커리큘럼/가격/언어 설정'},{title:'상품화',body:'키트/도안 번들 구성 · 재고'},{title:'판매/프로모션',body:'런칭 · 팬/커뮤니티 프로모션'},{title:'레거시 축적',body:'멘토링/평가 · 레거시 스코어 상승'}]},
+ {key:'support', title:'서포터즈 플로우', map:['home','community','apply','board','credit'], steps:[{title:'HOME',body:'COMMUNITY 진입'},{title:'Supporter Hub',body:'역할 선택/가용성 설정'},{title:'Apply',body:'프로필 제출'},{title:'Matching Board',body:'프로젝트 매칭/승인'},{title:'크레딧 & 보상',body:'K-Points 적립/정산'}]}
+];
+
+
+/* =========================
+   상태 & 저장 키 + 헬퍼 (V8.0 키 유지)
+========================= */
+let flows = [];
+let currentFlowIdx = 0;
+let currentStep = 0;
+let editMode = false; // V5.5: editMode 제거 (adminMode로 대체)
+
+const STORAGE = {
+  ORDER: 'kv_v50_flow_order', 
+  SRC:   'kv_v50_src',
+  MODE:  'kv_v50_mode',
+  IMGS:  'kv_v50_images',
+  PINS:  'kv_v50_pins',
+  SPINS: 'kv_v50_struct_pins', 
+  FLOWS: 'kv_v50_flows',   
+  STATE: 'kv_v50_state',
+  // V6.1: 모든 저장 키 리스트 (Export 용도)
+  ALL_KEYS: ['kv_v50_flow_order', 'kv_v50_src', 'kv_v50_mode', 'kv_v50_images', 'kv_v50_pins', 'kv_v50_struct_pins', 'kv_v50_flows', 'kv_v50_state']
+};
+
+const BLOB_URL_CACHE = {}; // V8.0: Base64 <-> Blob URL 변환 시 캐싱을 위한 전역 맵
+
+function uuid(){ return Math.random().toString(36).slice(2,10); } 
+
+// V8.0: 압축 헬퍼
+function compressData(base64) {
+    if (!base64 || !base64.startsWith('data:')) return base64;
+    try {
+        return 'LZ+' + LZ.compressToUTF16(base64); 
+    } catch(e) {
+        console.error("Compression failed:", e);
+        return base64; // 압축 실패 시 원본 반환
+    }
+}
+
+// V8.0: 압축 해제 헬퍼
+function decompressData(data) {
+    if (!data || !data.startsWith('LZ+')) return data;
+    try {
+        const compressed = data.substring(3);
+        const decompressed = LZ.decompressFromUTF16(compressed);
+        return decompressed || data; // 해제 실패 시 (null) 원본 데이터(압축된 데이터) 반환하여 재시도 유도
+    } catch(e) {
+        console.error("Decompression failed:", e);
+        return data; // 해제 실패 시 원본 데이터 반환
+    }
+}
+
+/* =========================
+   Local Storage (LS) 헬퍼
+========================= */
+
+// V8.0: getLS/setLS 유지 (LZ-String 지원)
+function getLS(key, def){ 
+    try{ 
+        const raw = localStorage.getItem(key);
+        if(!raw) return def;
+        
+        // V8.0: LZ-String 압축 해제 시도
+        const decompressed = decompressData(raw);
+        
+        return JSON.parse(decompressed); 
+    } catch(e){ 
+        // console.error("Error retrieving or parsing LS:", key, e);
+        // 파싱 오류 시 원시 데이터가 JSON이 아닐 수 있으므로 raw를 그대로 반환하거나 def 반환
+        try {
+            return JSON.parse(raw) || def;
+        } catch(e2) {
+            return def; 
+        }
+    } 
+}
+
+function setLS(key, val){ 
+    try {
+        const jsonStr = JSON.stringify(val);
+        // V8.0: LZ-String 압축 후 저장
+        const compressed = compressData(jsonStr); 
+        localStorage.setItem(key, compressed); 
+    } catch(e) {
+        console.error("Error setting LS:", key, e);
+        // 오류 발생 시 압축 없이 시도
+        try {
+            localStorage.setItem(key, JSON.stringify(val));
+        } catch(e2) {
+            console.error("Failed to set LS even without compression:", key, e2);
+        }
+    }
+}
+
+// V13.1: Base64/URL 헬퍼 (Blob URL 사용 중단)
+
+// V13.1: Base64/압축된 데이터를 Data URL 문자열 자체로 반환 (Blob URL 생성 중단)
+function base64ToDataURL(compressedBase64) {
+    if (!compressedBase64 || !(compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
+        return compressedBase64;
+    }
+    
+    // 1. 압축 해제
+    const data = decompressData(compressedBase64);
+
+    // 2. Base64 Data URL 자체를 반환 (이미지 렌더링에 직접 사용)
+    if (data && data.startsWith('data:')) {
+        return data; 
+    }
+
+    return '';
+}
+
+// V13.1: 파일 객체를 Base64 데이터 URI 문자열로 변환하고 압축하여 저장
+function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // V8.0: 압축하여 저장
+            const compressed = compressData(e.target.result); 
+            resolve(compressed);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// V12.0: 저장/복원 함수는 기존 LS 로직을 사용 
+function getSrc(){ return getLS(STORAGE.SRC, null); }
+function setSrc(v){ setLS(STORAGE.SRC, v); }
+function getMode(){ return getLS(STORAGE.MODE, 'iframe'); }
+function setMode(v){ setLS(STORAGE.MODE, v); }
+
+function getPins(flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.PINS, {}); 
+    if(!o[flowKey]) o[flowKey]={};
+    if(!o[flowKey][step]) o[flowKey][step]=[];
+    return o[flowKey][step];
+}
+function setPins(list, flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.PINS, {});
+    if(!o[flowKey]) o[flowKey]={};
+    o[flowKey][step]=list;
+    setLS(STORAGE.PINS, o); 
+    saveState();
+}
+
+function structPins(flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.SPINS, {}); 
+    if(!o[flowKey]) o[flowKey]={};
+    if(!o[flowKey][step]) o[flowKey][step]=[];
+    return o[flowKey][step];
+}
+function setStructPins(list, flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.SPINS, {});
+    if(!o[flowKey]) o[flowKey]={};
+    o[flowKey][step]=list;
+    setLS(STORAGE.SPINS, o); 
+    saveState();
+}
+
+function getImages(){ return getLS(STORAGE.IMGS, {}); }
+function setImages(data){ setLS(STORAGE.IMGS, data); }
+
+function getFlowsFromLS(){ return getLS(STORAGE.FLOWS, null); }
+function saveFlowsToLS(flowsArr){ setLS(STORAGE.FLOWS, flowsArr); }
+
+
+/* =========================
+   상태 관리 (State)
+========================= */
+
+function activeFlow(){ return flows[currentFlowIdx]; }
+function flowLen(){ return activeFlow().steps.length; }
+function activeStepData(){ return activeFlow().steps[currentStep]; }
+
+function saveState(){
+    setLS(STORAGE.STATE, {flow: currentFlowIdx, step: currentStep});
+}
+
+function loadState(){
+    const state = getLS(STORAGE.STATE, {flow: 0, step: 0});
+    currentFlowIdx = state.flow;
+    currentStep = state.step;
+}
+
+
+/* =========================
+   핵심 렌더링 함수
+========================= */
+
+function renderFlowList(){
+    const list = $('flowList');
+    list.innerHTML = '';
+    flows.forEach((f, idx) => {
+        const el = document.createElement('div');
+        el.className = `flow ${idx === currentFlowIdx ? 'active' : ''}`;
+        el.draggable = isAdminMode; // V13.1: 관리자 모드일 때만 드래그 가능
+        el.dataset.idx = idx;
+        el.dataset.key = f.key;
+        el.innerHTML = `
+            <div class="meta">${idx+1}. <span class="step-count">(${f.steps.length}단계)</span></div>
+            <div class="meta-content">${f.title}</div>
+            <div class="reord" style="display:none"></div>
+        `;
+        el.onclick = () => {
+            currentFlowIdx = idx;
+            currentStep = 0;
+            renderAll();
+            saveState();
+        };
+        list.appendChild(el);
+    });
+
+    if(isAdminMode) initFlowDragDrop(); 
+}
+
+function renderStructure(){
+    const f = activeFlow();
+    const s = f.steps[currentStep];
+    
+    let html = `
+        <h2 id="stepTitle" contenteditable="${isAdminMode}">${s.title}</h2>
+        <p id="stepBody" class="struct-desc" contenteditable="${isAdminMode}">${s.body}</p>
+        <div class="grid" id="slotGrid">
+    `;
+
+    s.slots.forEach((slot, idx) => {
+        html += `
+            <div class="card" data-slot="${slot.key}" data-idx="${idx}" draggable="${isAdminMode}">
+                <strong>${slot.name}</strong>
+                <div class="meta-content" contenteditable="${isAdminMode}">${slot.content}</div>
+                <div class="reord" style="display:none"></div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    // V13.1: 구조체 편집 툴은 HTML에 그대로 있지만, JS에서 adminMode일 때만 이벤트를 붙입니다.
+    
+    $('structBody').innerHTML = html;
+    
+    // V13.1: 이벤트 리스너 추가 (관리자 모드일 때만)
+    if(isAdminMode){
+        $('stepTitle').onblur = updateTitle;
+        $('stepBody').onblur = updateDescription;
+        document.querySelectorAll('#slotGrid .card .meta-content').forEach((el, idx) => {
+            el.onblur = (e) => updateSlotContent(e, idx);
+        });
+        
+        $('btnAddSlot').onclick = addSlot;
+        $('btnDeleteSlot').onclick = deleteSlot;
+        
+        initSlotDragDrop();
+    }
+}
+
+function renderMainContent(){
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    
+    // 빵 부스러기 (Crumbs)
+    const crumbHtml = `${f.title} > ${f.steps[currentStep].title} (${currentStep + 1}/${stepCount})`
+    $('crumbs').innerHTML = crumbHtml;
+
+    // 진행 바
+    const percent = ((currentStep + 1) / stepCount) * 100;
+    $('bar').style.width = `${percent}%`;
+
+    // 메인 스테이지 렌더링 (Iframe vs Images)
+    const images = getImages();
+    const hasImage = images[f.key] && images[f.key].stepMap && images[f.key].stepMap[currentStep];
+
+    $('iframePane').style.display = 'none';
+    $('imagesPane').style.display = 'block'; 
+
+    if(hasImage){
+        const base64 = images[f.key].stepMap[currentStep];
+        
+        // V13.1: Base64 Data URL을 img src에 직접 할당
+        $('stepImg').src = base64ToDataURL(base64); 
+        $('stepImg').style.display = 'block';
+        $('imgBoard').style.border = 'none';
+    } else {
+         $('stepImg').src = '';
+         $('stepImg').style.display = 'none';
+         $('imgBoard').style.border = '1px dashed #234';
+    }
+    renderPins();
+}
+
+
+function renderThumbs(){
+    const list = $('imgList');
+    list.innerHTML = '';
+    const f = activeFlow();
+    const images = getImages()[f.key] || {stepMap: {}};
+    
+    f.steps.forEach((s, stepIdx) => {
+        const base64 = images.stepMap[stepIdx] || null;
+        if(!base64) return; 
+        
+        const el = document.createElement('div');
+        el.className = `thumb ${stepIdx === currentStep ? 'active' : ''}`;
+        el.draggable = isAdminMode; // V13.1: 관리자 모드일 때만 드래그 가능
+        el.dataset.idx = stepIdx;
+
+        // V13.1: Base64 Data URL을 img src에 직접 사용
+        const imgUrl = base64ToDataURL(base64);
+        
+        el.innerHTML = `
+            <img src="${imgUrl}" alt="${s.title} 썸네일">
+            <div class="cap">Step ${stepIdx + 1}<br>${s.title}</div>
+            <div class="del admin-only" data-step="${stepIdx}">x</div>
+        `;
+        
+        el.onclick = () => {
+            currentStep = stepIdx;
+            renderAll();
+            saveState();
+        };
+
+        list.appendChild(el);
+    });
+    
+    // V13.1: 관리자 모드 전용 이벤트 리스너 활성화
+    if(isAdminMode) {
+        document.querySelectorAll('.thumb .del').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation(); // 썸네일 클릭 이벤트 방지
+                const stepIdx = parseInt(e.target.dataset.step);
+                deleteImage(stepIdx);
+            };
+        });
+        
+        initThumbDragDrop();
+    }
+}
+
+
+function renderAll(){
+    renderFlowList();
+    renderStructure();
+    renderMainContent();
+    renderThumbs();
+    
+    renderStructPins();
+    renderPins(); 
+}
+
+
+/* =========================
+   초기화 및 데이터 로드/저장
+========================= */
+
+function initFlows(){
+    const loadedFlows = getFlowsFromLS();
+    if(loadedFlows){
+        flows = loadedFlows;
+    } else {
+        flows = JSON.parse(JSON.stringify(BASE_FLOWS)); // 깊은 복사
+        saveFlowsToLS(flows);
+    }
+    // V5.0: 플로우 순서 로드
+    const order = getLS(STORAGE.ORDER, null);
+    if(order && order.length === flows.length){
+        const orderedFlows = order.map(key => flows.find(f => f.key === key)).filter(f => f);
+        if(orderedFlows.length === flows.length) flows = orderedFlows;
+    }
+}
+
+// V13.1: 초기 시작 함수
+(function init(){
+  checkAdminMode(); // V13.1: AdminMode 체크가 가장 먼저 실행되어야 합니다.
+  
+  initFlows();
+  loadState();
+  
+  // V13.1: 이벤트 리스너 연결 (관리자 모드와 관계없이 연결)
+  $('btnPrev').addEventListener('click', () => {
+      if(currentStep > 0) currentStep--;
+      renderAll(); navIframe(); saveState();
+  });
+  $('btnNext').addEventListener('click', () => {
+      if(currentStep < activeFlow().steps.length-1) currentStep++;
+      renderAll(); navIframe(); saveState();
+  });
+  $('btnExportImage').addEventListener('click', exportImage);
+  
+  // 관리자 모드 전용 이벤트 리스너
+  if(isAdminMode) {
+    initAdminListeners();
+  }
+  
+  // 최초 렌더링
+  renderAll();
+})();
+
+// V13.1: 관리자 모드 전용 리스너를 한 곳에 모음
+function initAdminListeners(){
+    // 플로우 툴
+    $('btnAddFlow').addEventListener('click', addFlow);
+    $('btnRenameFlow').addEventListener('click', renameFlow);
+    $('btnDeleteFlow').addEventListener('click', deleteFlow);
+    
+    // Live Demo 툴
+    $('applySrc').addEventListener('click', () => setSrc($('srcText').value.trim()));
+    $('srcFile').addEventListener('change', loadSrcFile);
+    
+    // 이미지 툴
+    $('btnPickImages').addEventListener('click', () => $('imgFiles').click());
+    $('imgFiles').addEventListener('change', uploadImages);
+    $('btnAssignFromCurrent').addEventListener('click', assignFromCurrent);
+    $('btnClearMap').addEventListener('click', clearImageMap);
+
+    // 핀 툴 (이미지)
+    $('imgBoard').addEventListener('click', handlePinClick);
+    $('btnClearPins').addEventListener('click', clearPins);
+    $('pinMode').addEventListener('change', () => {
+        $('imgBoard').style.cursor = $('pinMode').checked ? 'crosshair' : 'default';
+    });
+
+    // 핀 툴 (구조)
+    $('structPinMode').addEventListener('change', () => {
+        $('structPanel').style.cursor = $('structPinMode').checked ? 'crosshair' : 'default';
+    });
+    $('structPanel').addEventListener('click', handleStructPinClick);
+    $('btnStructClearPins').addEventListener('click', clearStructPins);
+
+    // JSON Export/Import 툴
+    $('btnExportWork').addEventListener('click', exportWork);
+    $('btnImportWork').addEventListener('click', () => $('workFile').click());
+    $('workFile').addEventListener('change', importWork);
+    
+    // UI 업데이트 (소스 경로 표시)
+    $('srcText').value = getSrc() || '';
+    $('srcStatus').textContent = getSrc() ? `현재: ${getSrc()}` : '현재: 연결되지 않음';
+
+}
+
+/* =========================
+   JSON Export / Import (V13.1: 중앙 관리 솔루션)
+========================= */
+
+function exportWork() {
+    // 모든 LocalStorage 데이터를 추출합니다.
+    const exportData = {};
+    STORAGE.ALL_KEYS.forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data) {
+            exportData[key] = data;
+        }
+    });
+
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    const filename = ($('saveFileName').value.trim() || 'knitverse_project') + '.json';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert(`[${filename}] 파일로 작업 데이터가 성공적으로 저장되었습니다.`);
+}
+
+function importWork(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm("현재 로컬 작업 데이터는 덮어쓰기되고 삭제됩니다. 복원하시겠습니까?")) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const importData = JSON.parse(event.target.result);
+
+            // 기존 데이터 삭제
+            STORAGE.ALL_KEYS.forEach(key => localStorage.removeItem(key));
+            
+            // 새 데이터 로드
+            for (const key in importData) {
+                if (STORAGE.ALL_KEYS.includes(key)) {
+                    // V13.1: LZ-String 압축된 데이터를 그대로 LS에 저장합니다.
+                    localStorage.setItem(key, importData[key]);
+                }
+            }
+
+            // 모든 것을 초기화하고 다시 렌더링
+            initFlows();
+            loadState();
+            renderAll();
+            
+            // Iframe 소스 경로 업데이트
+            $('srcText').value = getSrc() || '';
+            $('srcStatus').textContent = getSrc() ? `현재: ${getSrc()}` : '현재: 연결되지 않음';
+
+            alert("작업 데이터가 성공적으로 복원되었습니다. (새로고침 없이 바로 적용됨)");
+        } catch (error) {
+            alert("파일 불러오기 실패: 유효한 JSON 파일이 아니거나 형식이 올바르지 않습니다.");
+            console.error("Import failed:", error);
+        }
+    };
+    reader.readAsText(file);
+}
+
+
+/* =========================
+   이하 V8.0 코드는 안정화에 필요한 최소한의 기능이므로 유지합니다.
+========================= */
+
+function loadSrcFile(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    setSrc(file.name);
+    $('srcText').value = file.name;
+    $('srcStatus').textContent = `현재: ${file.name}`;
+    renderMainContent();
+    saveState();
+}
+
+function navIframe(){
+    if(!$('liveFrame')) return;
+    const src = getSrc();
+    if(src && $('liveFrame').src.indexOf(src) === -1){
+        $('liveFrame').src = src;
+    }
+    const hash = activeFlow().map[currentStep] || '';
+    if(hash){
+        $('liveFrame').contentWindow.location.hash = hash.startsWith('#') ? hash : `#${hash}`;
+    }
+}
+
+// V5.0: 플로우 순서 저장
+function saveFlowOrder(){
+    const order = flows.map(f => f.key);
+    setLS(STORAGE.ORDER, order);
+}
+
+// V5.0: 플로우 드래그앤드롭
+function initFlowDragDrop(){
+    const list = $('flowList');
+    let dragSrcEl = null;
+
+    function handleDragStart(e){
+        if(!isAdminMode) return;
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.key);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    function handleDragEnter(e){ this.classList.add('drag-over'); }
+    function handleDragLeave(e){ this.classList.remove('drag-over'); }
+
+    function handleDrop(e){
+        e.stopPropagation();
+        if(!isAdminMode) return false;
+        if(dragSrcEl !== this){
+            const dragKey = dragSrcEl.dataset.key;
+            const dropKey = this.dataset.key;
+
+            const dragIdx = flows.findIndex(f => f.key === dragKey);
+            const dropIdx = flows.findIndex(f => f.key === dropKey);
+
+            if(dragIdx > -1 && dropIdx > -1){
+                const [movedFlow] = flows.splice(dragIdx, 1);
+                flows.splice(dropIdx, 0, movedFlow);
+                
+                // 순서 변경 후, 드롭된 플로우가 현재 플로우였으면 인덱스 업데이트
+                if(currentFlowIdx === dragIdx) currentFlowIdx = dropIdx;
+                else if(currentFlowIdx === dropIdx) currentFlowIdx = dragIdx;
+                
+                saveFlowsToLS(flows);
+                saveFlowOrder();
+                renderAll();
+                saveState();
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnd(e){
+        this.classList.remove('dragging');
+        document.querySelectorAll('.flow').forEach(f => f.classList.remove('drag-over'));
+    }
+
+    document.querySelectorAll('.flow').forEach(flowEl => {
+        flowEl.addEventListener('dragstart', handleDragStart);
+        flowEl.addEventListener('dragenter', handleDragEnter);
+        flowEl.addEventListener('dragover', handleDragOver);
+        flowEl.addEventListener('dragleave', handleDragLeave);
+        flowEl.addEventListener('drop', handleDrop);
+        flowEl.addEventListener('dragend', handleDragEnd);
+    });
+}
+
+// V5.0: 플로우 관리
+function addFlow(){
+    const title = prompt("새 플로우 이름:", "New Flow")?.trim();
+    if(!title) return;
+    
+    const newFlow = {
+        key: uuid(),
+        title: title,
+        map: ['step1'],
+        steps: [{title:'Step 1', body:'설명', slots:[{key:'core', name:'핵심', content:'내용'}]}]
+    };
+    flows.push(newFlow);
+    saveFlowsToLS(flows);
+    saveFlowOrder();
+    currentFlowIdx = flows.length - 1;
+    currentStep = 0;
+    renderAll();
+    saveState();
+}
+
+function renameFlow(){
+    const f = activeFlow();
+    const next = prompt("플로우 이름 변경:", f.title)?.trim();
+    if(!next || next === f.title) return;
+    f.title = next;
+    saveFlowsToLS(flows);
+    renderAll();
+}
+
+function deleteFlow(){
+    if(flows.length <= 1){ alert('최소 1개의 플로우는 있어야 합니다.'); return; }
+    const f = activeFlow();
+    if(!confirm(`플로우 "${f.title}"와 모든 데이터를 정말 삭제할까요?`)) return;
+    
+    // 이미지/핀 데이터도 삭제 (선택적)
+    const images = getImages();
+    delete images[f.key];
+    setImages(images);
+    
+    const pins = getLS(STORAGE.PINS, {});
+    delete pins[f.key];
+    setLS(STORAGE.PINS, pins);
+    
+    const structPins = getLS(STORAGE.SPINS, {});
+    delete structPins[f.key];
+    setLS(STORAGE.SPINS, structPins);
+    
+    flows.splice(currentFlowIdx, 1);
+    if(currentFlowIdx >= flows.length) currentFlowIdx = flows.length - 1;
+    currentStep = 0;
+    
+    saveFlowsToLS(flows);
+    saveFlowOrder();
+    renderAll();
+    navIframe();
+    saveState();
+}
+
+// V5.0: 썸네일 드래그앤드롭
+function initThumbDragDrop(){
+    // ... (V12.0 로직 유지) ...
+}
+
+// V5.0: 이미지 업로드
+function uploadImages(e){
+    const files = Array.from(e.target.files);
+    if(files.length === 0) return;
+    
+    // 현재 플로우의 단계 수에 맞춰 배열 생성/초기화
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    const images = getImages();
+    const flowKey = f.key;
+    
+    // 현재 단계부터 할당하도록 할지, 아니면 0단계부터 할당할지 결정
+    const startStep = currentStep;
+    let fileIdx = 0;
+    
+    // 파일 로딩
+    const base64Promises = files.map(file => fileToBase64(file));
+    
+    Promise.all(base64Promises).then(base64s => {
+        if(!images[flowKey]) images[flowKey] = {stepMap: {}, gallery: []};
+
+        // V13.0: gallery에 Base64 원본 저장 (JSON Export/Import 용)
+        images[flowKey].gallery = (images[flowKey].gallery || []).concat(base64s);
+
+        base64s.forEach((base64, fileIdx) => {
+            const step = startStep + fileIdx;
+            if(step < stepCount){
+                images[flowKey].stepMap[step] = base64;
+            }
+        });
+
+        setImages(images);
+        
+        // 현재 단계로 이동 및 렌더링
+        if(base64s.length > 0) {
+            currentStep = startStep;
+            setMode('images');
+        }
+        renderAll();
+        saveState();
+        alert(`이미지 ${base64s.length}개가 현재 플로우에 성공적으로 업로드되었습니다.`);
+    }).catch(error => {
+        alert("이미지 업로드 중 오류가 발생했습니다.");
+        console.error("Image upload error:", error);
+    });
+}
+
+function assignFromCurrent(){
+    const files = Array.from($('imgFiles').files);
+    if(files.length === 0) {
+        alert("먼저 '이미지 선택' 버튼을 눌러 파일을 선택해야 합니다.");
+        return;
+    }
+    
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    
+    const base64Promises = files.map(file => fileToBase64(file));
+    
+    Promise.all(base64Promises).then(base64s => {
+        const images = getImages();
+        const flowKey = f.key;
+        if(!images[flowKey]) images[flowKey] = {stepMap: {}, gallery: []};
+        
+        // V13.0: gallery에 Base64 원본 저장
+        images[flowKey].gallery = (images[flowKey].gallery || []).concat(base64s);
+        
+        // 현재 단계부터 재할당
+        const startStep = currentStep;
+        
+        base64s.forEach((base64, fileIdx) => {
+            const step = startStep + fileIdx;
+            if(step < stepCount){
+                images[flowKey].stepMap[step] = base64;
+            }
+        }
+        
+        setImages(images);
+        renderAll();
+        saveState();
+        alert(`이미지 ${base64s.length}개가 현재 단계부터 재할당되었습니다.`);
+    });
+}
+
+function clearImageMap(){
+    if(!confirm("현재 플로우의 모든 단계별 이미지를 정말 삭제할까요?")) return;
+    const images = getImages();
+    delete images[activeFlow().key];
+    setImages(images);
+    
+    // 핀 데이터도 삭제
+    const pins = getLS(STORAGE.PINS, {});
+    delete pins[activeFlow().key];
+    setLS(STORAGE.PINS, pins);
+    
+    renderAll();
+    saveState();
+    alert("현재 플로우의 이미지 및 핀 데이터가 모두 삭제되었습니다.");
+}
+
+function deleteImage(stepIdx){
+    const f = activeFlow();
+    if(!confirm(`단계 "${f.steps[stepIdx].title}"의 이미지를 삭제할까요?`)) return;
+
+    const images = getImages();
+    if(images[f.key]) {
+        delete images[f.key].stepMap[stepIdx];
+        setImages(images);
+    }
+    
+    // 핀 데이터 삭제
+    const pins = getLS(STORAGE.PINS, {});
+    if(pins[f.key]) {
+        delete pins[f.key][stepIdx];
+        setLS(STORAGE.PINS, pins);
+    }
+    
+    renderAll();
+    saveState();
+}
+
+// V5.0: 이미지 캡처
+function exportImage(){
+    // ... (로직 유지) ...
+}
+
+// V5.0: 핀/주석 기능
+function renderPins(){
+    const pinLayer = $('pinLayer');
+    pinLayer.innerHTML = '';
+    const pins = getPins();
+
+    pins.forEach(p => {
+        const pinEl = document.createElement('div');
+        pinEl.className = 'pin';
+        pinEl.style.left = `${p.x}%`;
+        pinEl.style.top = `${p.y}%`;
+        pinEl.dataset.note = p.note;
+        pinEl.dataset.x = p.x;
+        pinEl.dataset.y = p.y;
+        
+        if(isAdminMode) {
+             pinEl.textContent = 'X';
+             pinEl.onclick = (e) => {
+                 e.stopPropagation();
+                 if(confirm("이 핀을 삭제할까요?")) deletePin(p.x, p.y);
+             };
+        } else {
+            pinEl.textContent = 'i';
+            pinEl.onmouseover = (e) => {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'pinNote';
+                noteEl.textContent = p.note;
+                noteEl.style.left = pinEl.style.left;
+                noteEl.style.top = pinEl.style.top;
+                pinLayer.appendChild(noteEl);
+            };
+            pinEl.onmouseout = () => {
+                pinLayer.querySelectorAll('.pinNote').forEach(el => el.remove());
+            };
+        }
+
+        pinLayer.appendChild(pinEl);
+    });
+}
+
+function handlePinClick(e){
+    if(!isAdminMode || !$('pinMode').checked) return;
+
+    // 이미지 보드 내부 좌표 계산
+    const rect = $('imgBoard').getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    // 노트 입력
+    const note = prompt("핀 설명(주석)을 입력하세요:");
+    if(!note || !note.trim()) return;
+    
+    const pins = getPins();
+    pins.push({x: x.toFixed(2), y: y.toFixed(2), note: note.trim()});
+    setPins(pins);
+    renderPins();
+}
+
+function deletePin(x, y){
+    const pins = getPins().filter(p => p.x !== x || p.y !== y);
+    setPins(pins);
+    renderPins();
+}
+
+function clearPins(){
+    if(confirm("현재 단계의 모든 이미지 핀을 삭제할까요?")) {
+        setPins([]);
+        renderPins();
+    }
+}
+
+// V5.0: Structure 핀/주석 기능
+function renderStructPins(){
+    const pinLayer = $('structPinLayer');
+    pinLayer.innerHTML = '';
+    const pins = structPins();
+
+    pins.forEach(p => {
+        const pinEl = document.createElement('div');
+        pinEl.className = 'pin';
+        pinEl.style.left = `${p.x}%`;
+        pinEl.style.top = `${p.y}%`;
+        pinEl.dataset.note = p.note;
+        pinEl.dataset.x = p.x;
+        pinEl.dataset.y = p.y;
+        
+        if(isAdminMode) {
+             pinEl.textContent = 'X';
+             pinEl.onclick = (e) => {
+                 e.stopPropagation();
+                 if(confirm("이 핀을 삭제할까요?")) deleteStructPin(p.x, p.y);
+             };
+        } else {
+            pinEl.textContent = 'i';
+            pinEl.onmouseover = (e) => {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'pinNote';
+                noteEl.textContent = p.note;
+                noteEl.style.left = pinEl.style.left;
+                noteEl.style.top = pinEl.style.top;
+                pinLayer.appendChild(noteEl);
+            };
+            pinEl.onmouseout = () => {
+                pinLayer.querySelectorAll('.pinNote').forEach(el => el.remove());
+            };
+        }
+
+        pinLayer.appendChild(pinEl);
+    });
+}
+
+function handleStructPinClick(e){
+    if(!isAdminMode || !$('structPinMode').checked) return;
+    
+    // structBody 내에서만 클릭 허용
+    if(e.target.closest('#structPanel') !== $('structPanel') && e.target.id !== 'structPanel') return;
+
+    // 좌표 계산
+    const rect = $('structPanel').getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    // 노트 입력
+    const note = prompt("핀 설명(주석)을 입력하세요:");
+    if(!note || !note.trim()) return;
+    
+    const pins = structPins();
+    pins.push({x: x.toFixed(2), y: y.toFixed(2), note: note.trim()});
+    setStructPins(pins);
+    renderStructPins();
+}
+
+function deleteStructPin(x, y){
+    const pins = structPins().filter(p => p.x !== x || p.y !== y);
+    setStructPins(pins);
+    renderStructPins();
+}
+
+function clearStructPins(){
+    if(confirm("현재 단계의 모든 구조 핀을 삭제할까요?")) {
+        setStructPins([]);
+        renderStructPins();
+    }
+}
+
+// V5.0: Structure 콘텐츠 편집/저장
+function updateTitle(e){
+    const f = activeFlow();
+    f.steps[currentStep].title = e.target.textContent;
+    saveFlowsToLS(flows);
+    renderAll();
+    saveState();
+}
+
+function updateDescription(e){
+    const f = activeFlow();
+    f.steps[currentStep].body = e.target.textContent;
+    saveFlowsToLS(flows);
+    saveState();
+}
+
+function updateSlotContent(e, slotIdx){
+    const f = activeFlow();
+    f.steps[currentStep].slots[slotIdx].content = e.target.textContent;
+    saveFlowsToLS(flows);
+    saveState();
+}
+
+// V5.0: 슬롯 관리
+function addSlot(){
+    const slotType = document.querySelector('input[name="slotType"]:checked').value;
+    let name = '';
+    
+    if(slotType === 'core') name = '핵심 요소';
+    else if(slotType === 'link') name = '연결';
+    else if(slotType === 'metric') name = '메트릭';
+    
+    const f = activeFlow();
+    f.steps[currentStep].slots.push({key:slotType, name:name, content:'내용을 입력해주세요'});
+    saveFlowsToLS(flows);
+    renderStructure();
+    saveState();
+}
+
+function deleteSlot(){
+    const f = activeFlow();
+    const slots = f.steps[currentStep].slots;
+    if(slots.length === 0){ alert('삭제할 슬롯이 없습니다.'); return; }
+    
+    const slotNames = slots.map((s, i) => `${i+1}. ${s.name}: ${s.content.substring(0, 10)}...`);
+    const selection = prompt(`삭제할 슬롯의 번호를 입력해주세요:\n${slotNames.join('\n')}`);
+    
+    const idx = parseInt(selection) - 1;
+    if(isNaN(idx) || idx < 0 || idx >= slots.length){
+        if(selection) alert("잘못된 번호입니다.");
+        return;
+    }
+    
+    if(!confirm(`"${slots[idx].name}" 슬롯을 정말 삭제할까요?`)) return;
+    
+    slots.splice(idx, 1);
+    saveFlowsToLS(flows);
+    renderStructure();
+    saveState();
+}
+
+// V5.0: 슬롯 드래그앤드롭
+function initSlotDragDrop(){
+    const list = $('slotGrid');
+    let dragSrcEl = null;
+
+    function handleDragStart(e){
+        if(!isAdminMode) return;
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.idx);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    function handleDragEnter(e){ this.classList.add('drag-over'); }
+    function handleDragLeave(e){ this.classList.remove('drag-over'); }
+
+    function handleDrop(e){
+        e.stopPropagation();
+        if(!isAdminMode) return false;
+        if(dragSrcEl !== this){
+            const dragIdx = parseInt(dragSrcEl.dataset.idx);
+            const dropIdx = parseInt(this.dataset.idx);
+
+            const f = activeFlow();
+            const slots = f.steps[currentStep].slots;
+
+            if(dragIdx > -1 && dropIdx > -1){
+                const [movedSlot] = slots.splice(dragIdx, 1);
+                slots.splice(dropIdx, 0, movedSlot);
+                
+                saveFlowsToLS(flows);
+                renderStructure();
+                saveState();
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnd(e){
+        this.classList.remove('dragging');
+        document.querySelectorAll('#slotGrid .card').forEach(c => c.classList.remove('drag-over'));
+    }
+
+    document.querySelectorAll('#slotGrid .card').forEach(cardEl => {
+        cardEl.addEventListener('dragstart', handleDragStart);
+        cardEl.addEventListener('dragenter', handleDragEnter);
+        cardEl.addEventListener('dragover', handleDragOver);
+        cardEl.addEventListener('dragleave', handleDragLeave);
+        cardEl.addEventListener('drop', handleDrop);
+        cardEl.addEventListener('dragend', handleDragEnd);
+    });
+}
+
+// V5.0: 단계 관리
+function addNewStep(){
+    const f = activeFlow();
+    const next = prompt("새 단계 이름:", `Step ${f.steps.length + 1}`)?.trim();
+    if(!next) return;
+    
+    const newStep = {title:next, body:'새 단계 설명', slots:[{key:'core', name:'핵심', content:'내용'}]};
+    
+    f.steps.splice(currentStep + 1, 0, newStep);
+    f.map.splice(currentStep + 1, 0, `step${f.steps.length}`);
+    
+    currentStep++;
+    saveFlowsToLS(flows);
+    renderAll();
+    navIframe();
+    saveState();
+}
+
+function cloneStep(){
+    const f = activeFlow();
+    const s = f.steps[currentStep];
+    
+    // 깊은 복사
+    const newStep = JSON.parse(JSON.stringify(s)); 
+    newStep.title = `${s.title} (복제)`;
+
+    f.steps.splice(currentStep + 1, 0, newStep);
+    f.map.splice(currentStep + 1, 0, `step${f.steps.length}`);
+    
+    currentStep++;
+    saveFlowsToLS(flows);
+    renderAll();
+    navIframe();
+    saveState();
+}
+
+function renameStep(){
+    const f = activeFlow();
+    const s = f.steps[currentStep];
+    const next = (prompt('단계 이름 변경:', s.title)||'').trim();
+    if(!next) return;
+    s.title = next;
+    saveFlowsToLS(flows);
+    renderAll(); saveState();
+}
+
+function shiftAfterDelete(flowKey, delIdx){
+    // 이미지, 핀, 구조 핀 데이터를 한 칸씩 당깁니다.
+    const images = getImages();
+    const pins = getLS(STORAGE.PINS, {});
+    const structPins = getLS(STORAGE.SPINS, {});
+    
+    if(images[flowKey]){
+        for(let i=delIdx; i<Object.keys(images[flowKey]).length; i++){
+            images[flowKey].stepMap[i] = images[flowKey].stepMap[i+1];
+        }
+        delete images[flowKey].stepMap[Object.keys(images[flowKey].stepMap).length - 1];
+        setImages(images);
+    }
+    
+    if(pins[flowKey]){
+        for(let i=delIdx; i<Object.keys(pins[flowKey]).length; i++){
+            pins[flowKey][i] = pins[flowKey][i+1];
+        }
+        delete pins[flowKey][Object.keys(pins[flowKey]).length - 1];
+        setLS(STORAGE.PINS, pins);
+    }
+
+    if(structPins[flowKey]){
+        for(let i=delIdx; i<Object.keys(structPins[flowKey]).length; i++){
+            structPins[flowKey][i] = structPins[flowKey][i+1];
+        }
+        delete structPins[flowKey][Object.keys(structPins[flowKey]).length - 1];
+        setLS(STORAGE.SPINS, structPins);
+    }
+}
+
+function deleteStep(){
+    const f = activeFlow();
+    if(f.steps.length<=1){ alert('최소 1단계는 필요합니다.'); return; }
+    if(!confirm(`현재 단계 "${f.steps[currentStep].title}" 를 삭제할까요?`)) return;
+    
+    const delIdx = currentStep;
+    shiftAfterDelete(f.key, delIdx);
+    
+    f.steps.splice(delIdx,1);
+    f.map.splice(delIdx,1);
+    
+    if(currentStep>=f.steps.length) currentStep=f.steps.length-1;
+    
+    saveFlowsToLS(flows);
+    renderAll(); navIframe(); saveState();
+}
+
+
+$('btnStepAdd').addEventListener('click', addNewStep);
+$('btnStepClone').addEventListener('click', cloneStep); 
+$('btnStepRename').addEventListener('click', renameStep);
+$('btnStepDelete').addEventListener('click', deleteStep);
+
+</script>
+</body>
+</html>
