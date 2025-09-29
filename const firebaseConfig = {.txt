@@ -1,0 +1,9 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyBcPS6qESHwa9Y9RMKfocKesffILk_FIT8",
+  authDomain: "knitverse-storyboard-project.firebaseapp.com",
+  projectId: "knitverse-storyboard-project",
+  storageBucket: "knitverse-storyboard-project.firebasestorage.app",
+  messagingSenderId: "411428209337",
+  appId: "1:411428209337:web:1c6c0df694bf12c4851168",
+  measurementId: "G-B66MGKHE8S"
+};

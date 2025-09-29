@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단순 박스 형태 메인 페이지 시맨틱 와이어프레임</title>
+    <style>
+        /*  기본 스타일 초기화 및 레이아웃 정의 */
+        body { margin: 0; font-family: sans-serif; background-color: #f4f4f4; }
+       .main-container {
+            max-width: 1200px; /* 전체 너비 제한 */
+            margin: 20px auto; /* 중앙 정렬 */
+            background-color: #ffffff;
+            padding: 10px;
+        }
+
+        /*  와이어프레임 '박스 형태' 시각화 스타일 */
+       .box-area {
+            border: 1px solid #000; /* 박스 구분선 */
+            margin-bottom: 20px; /* 박스 간격 */
+            padding: 30px 20px; /* 영역 내부 여백 */
+            text-align: center;
+        }
+
+        /*  Header 영역 내부 플렉스 배치 */
+       .header-area { text-align: left; }
+       .header-content { display: flex; justify-content: space-between; align-items: center; }
+       .logo-box { font-weight: bold; font-size: 1.2em; }
+       .main-nav a { margin: 0 15px; text-decoration: none; color: #000; font-size: 0.95em; }
+       .extra-cta-box { border: 1px solid #000; padding: 5px 10px; font-size: 0.8em; }
+
+        /*  메인 섹션 스타일 */
+       .main-section-area { min-height: 250px; }
+        h2 { font-size: 2em; margin-top: 0; }
+        p { color: #555; }
+       .cta-group { margin-top: 20px; }
+       .cta-button { border: 1px solid #000; padding: 10px 15px; background: #fff; cursor: pointer; margin-right: 10px; }
+        
+        /*  아티스트 지원 섹션 버튼 정렬 */
+       .artist-support-section { text-align: left; }
+       .artist-support-section.cta-group { text-align: right; margin-top: -30px; } 
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <header class="box-area header-area">
+            <div class="header-content">
+                <div class="logo-box">상단 로고</div>
+                <nav class="main-nav">
+                    <a href="#">SHOP</a>
+                    <a href="#">CLASSES</a>
+                    <a href="#">ARTIST COMMUNITY</a>
+                    <a href="#">MY PAG</a>
+                </nav>
+                <div class="extra-cta-box">
+                    쿠폰/평가함
+                </div>
+            </div>
+        </header>
+
+        <main class="box-area main-section-area">
+            <h2>메인 구역</h2>
+            <p>풀랫폼의 메인 콘텐츠와 버튼</p>
+            <div class="cta-group">
+                <button class="cta-button">JOIN THE KNITTING</button>
+                <button class="cta-button">GLOBAL TRENDING</button>
+            </div>
+        </main>
+
+        <section class="box-area milestone-section">
+            <h2>글로벌 마일스톤 구역</h2>
+            <p>글로벌 마일스톤 현황 표시</p>
+        </section>
+
+        <section class="box-area artist-support-section">
+            <h2>아티스트 지원 구역</h2>
+            <p>아티스트 관련 콘텐츠와 버튼</p>
+            <div class="cta-group">
+                <button class="cta-button">APPLY AS ARTIST</button>
+                <button class="cta-button">EXPLORE COMMUNITY</button>
+            </div>
+        </section>
+
+        <footer class="box-area footer-area">
+            <p>사이트 저작권 및 기타 정보</p>
+        </footer>
+    </div>
+</body>
+</html>
