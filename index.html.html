@@ -3,12 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Knitverse · Hybrid Storyboard v11.0 (Firebase/Admin Mode)</title>
+<title>Knitverse · Hybrid Storyboard v12.0 (Stable JSON Admin Mode)</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> 
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script> 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
-
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+KR:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{ --bg:#0b0c10; --panel:#10151b; --card:#141c26; --text:#eaf2ff; --muted:#a9b7c6; --blue:#35d0ff; --gold:#ffd54f; --line:#223244; }
@@ -35,8 +32,8 @@
   input[type="text"]{width:100%;padding:8px;border-radius:8px;border:1px solid #223244;background:#0b1219;color:#eaf2ff;font-family:'Roboto Mono'}
   .radio{display:flex;gap:12px;align-items:center;margin:6px 0 2px}
   .small{font-size:12px;color:#9fb0c6}
-
-  /* V11.0: 관리자 모드가 아닐 때는 편집 버튼을 숨깁니다. */
+  
+  /* V12.0: 관리자 모드가 아닐 때는 편집 버튼을 숨깁니다. */
   .admin-only { display: none !important; }
 
   /* 썸네일 영역 */
@@ -49,14 +46,15 @@
   .thumb img{max-width:100%;max-height:68px;border-radius:6px;display:block;margin:0 auto 6px}
   .thumb .cap{font-size:11px;color:#cfe2ff}
   .thumb .del{position:absolute;top:6px;right:6px;background:#150e0e;border:1px solid #4a2020;color:#ff9b9b;border-radius:8px;font-size:11px;padding:2px 6px;cursor:pointer;z-index:10}
-
+  
   main{background:var(--panel);border:1px solid #1b2a3a;border-radius:14px;padding:0;overflow:hidden}
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border-bottom:1px solid #192737}
   .crumbs{color:#b9c7d8;font-size:12px}
+  .controls{display:flex;gap:8px;align-items:center;}
   .btn{background:#0f141b;border:1px solid #223244;color:#eaf2ff;padding:8px 12px;border-radius:10px;cursor:pointer;flex-shrink:0}
   .btn.primary{border-color:var(--gold);color:#111;background:var(--gold);font-weight:800}
   .btn.danger{border-color:#4a2020;color:#ff9b9b;background:#150e0e;}
-
+  
   /* V6.0: 이미지 선택 버튼 강조 스타일 */
   .btn.asset-primary{
       background: #ff9800; /* 주황색 배경 */
@@ -65,13 +63,13 @@
       font-weight: 800; 
       box-shadow: 0 0 8px #ff980044;
   }
-
+  
   .stage{padding:14px}
   .unified-stage{display:grid;grid-template-columns:1fr 1fr;gap:14px;} 
   @media(max-width:1400px){.unified-stage{grid-template-columns:1fr}}
   .screen-panel{position:relative;background:linear-gradient(180deg,#0f141b,#101a24);border:1px solid #223244;border-radius:12px;padding:14px;min-height:480px;box-shadow:0 14px 44px #0008;height:100%}
   .stage-wrap{display:grid;grid-template-rows:minmax(480px, auto) 1fr;gap:14px;}
-
+  
   /* Structure UI */
   .grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
   .card{position:relative;background:#182330;border-left:4px solid var(--blue);border-radius:8px;padding:10px 12px;transition:all .1s; cursor:grab;}
@@ -82,14 +80,14 @@
   .card[data-slot*="link"] strong{color:#c7ff35} 
   .card[data-slot*="metric"] strong{color:#ff9933} 
   .meta-content{color:var(--text);font-size:14px;font-weight:600;line-height:1.4;min-height:20px}
-
+  
   /* HOME (제목) 및 설명 편집 가능 스타일 */
   h2{margin-top:0;font-size:1.6em;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px;color:var(--gold);cursor:pointer}
   .struct-desc{color:#d6e6ff;font-size:14px;line-height:1.5;margin-bottom:20px;cursor:pointer}
-
+  
   .progress{height:8px;background:#0c1219;border:1px solid #1e2b3a;border-radius:999px;overflow:hidden;margin:8px 0 0}
   .bar{height:100%;background:linear-gradient(90deg,#35d0ff,#ffd54f);width:0%}
-
+  
   iframe{width:100%;height:100%;min-height:540px;border:1px solid #223244;border-radius:12px;background:#0b0c10}
   .imgStageWrap{background:linear-gradient(180deg,#0f141b,#0f1721);border:1px solid #203044;border-radius:12px;padding:10px;height:100%;}
   /* V5.4: Live 이미지 툴바 및 핀 버튼 영역 */
@@ -98,13 +96,13 @@
   .imgBoard{position:relative;display:flex;align-items:center;justify-content:center;min-height:540px;background:#0b0c10;border:1px dashed #234;border-radius:12px;
             max-width:100%; max-height:100%; overflow:hidden;} /* overflow:hidden 추가 */
   .imgBoard img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px;display:block;object-fit:contain;}
-
+  
   .pinLayer{position:absolute;inset:0;pointer-events:none}
   .pin{position:absolute;transform:translate(-50%,-50%);background:#ffd54f;color:#111;border:2px solid #111;border-radius:999px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;pointer-events:auto;cursor:pointer}
   .pin:hover{box-shadow:0 0 0 4px #ffd54f33}
   .pinNote{position:absolute;transform:translate(8px,-50%);background:#141c26;color:#eaf2ff;border:1px solid #223244;border-radius:8px;padding:6px;min-width:160px;max-width:260px;font-size:12px}
   .hint{font-size:12px;color:#9fb0c6}
-
+  
   /* Structure 툴바: 단계 관리 버튼 통합 */
   .structTools{position:relative;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line);}
   .slot-tools{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
@@ -112,15 +110,15 @@
 </head>
 <body>
 <header>
-  <div class="brand">KNITVERSE · Hybrid Storyboard V11.0</div>
+  <div class="brand">KNITVERSE · Hybrid Storyboard V12.0 (Stable)</div>
 </header>
 <div class="wrap" id="mainWrapper">
   <aside>
     <div class="section-title">플로우 선택 (드래그로 순서 변경)</div>
-    <div class="flow-tools">
-        <button class="btn admin-only" id="btnAddFlow">플로우 추가</button>
-        <button class="btn admin-only" id="btnRenameFlow">이름 변경</button>
-        <button class="btn danger admin-only" id="btnDeleteFlow">삭제</button>
+    <div class="flow-tools admin-only">
+        <button class="btn" id="btnAddFlow">플로우 추가</button>
+        <button class="btn" id="btnRenameFlow">이름 변경</button>
+        <button class="btn danger" id="btnDeleteFlow">삭제</button>
     </div>
     <div class="flow-list" id="flowList"></div>
 
@@ -135,7 +133,7 @@
         <div class="small" id="srcStatus">현재: 연결되지 않음</div>
       </div>
     </div>
-
+    
     <div class="thumbs-section admin-only">
         <div class="section-title">단계별 이미지 삽입 (Step Images)</div>
         <div class="small">이미지를 여기에 업로드하면 자동으로 이미지 모드로 전환됩니다.</div>
@@ -146,7 +144,7 @@
             <input id="imgFiles" type="file" accept="image/*" multiple style="display:none">
             <div class="small" id="imgInfo" style="flex-basis: 100%;"></div>
         </div>
-
+        
         <div class="thumbs" id="imgList"></div>
         <div class="small">드래그앤드롭으로 이미지 순서 변경 가능. 썸네일 클릭 시 해당 단계로 이동.</div>
     </div>
@@ -155,7 +153,7 @@
         <div class="section-title">작업 저장 / 불러오기 (JSON)</div>
         <label class="small admin-only" style="margin-top: 8px;">저장할 파일명 (확장자 제외)</label>
         <input id="saveFileName" type="text" placeholder="예: knitverse_project_final" style="margin-bottom: 8px;">
-
+        
         <button class="btn primary" id="btnExportWork">작업 저장 (JSON)</button> 
 
         <div style="height: 10px;"></div>
@@ -163,7 +161,7 @@
         <input id="workFile" type="file" accept=".json" style="display:none">
         <div class="small">저장된 JSON 파일을 불러와 작업 환경을 복원합니다.</div>
     </div>
-
+    
   </aside>
   <main id="mainContent">
     <div class="toolbar">
@@ -176,16 +174,16 @@
     </div>
 
     <div class="stage unified-stage">
-
+      
       <div id="structPanel" class="screen-panel">
-        <div class="structTools">
-          <button class="btn admin-only" id="btnStepAdd">단계 추가</button>
-          <button class="btn admin-only" id="btnStepClone">현재 단계 복제</button>
-          <button class="btn admin-only" id="btnStepRename">이름 변경</button>
-          <button class="btn danger admin-only" id="btnStepDelete">단계 삭제</button>
+        <div class="structTools admin-only">
+          <button class="btn" id="btnStepAdd">단계 추가</button>
+          <button class="btn" id="btnStepClone">현재 단계 복제</button>
+          <button class="btn" id="btnStepRename">이름 변경</button>
+          <button class="btn danger" id="btnStepDelete">단계 삭제</button>
           <div style="flex-basis:100%; height:8px;"></div>
-          <label class="small admin-only"><input type="checkbox" id="structPinMode"> 핀 추가</label> 
-          <button class="btn admin-only" id="btnStructClearPins">핀 삭제</button>
+          <label class="small"><input type="checkbox" id="structPinMode"> 핀 추가</label> 
+          <button class="btn" id="btnStructClearPins">핀 삭제</button>
         </div>
         <div id="structBody"></div>
         <div class="pinLayer" id="structPinLayer"></div>
@@ -218,53 +216,21 @@
   </main>
 </div>
 
-<div id="loadingOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:9999; display:none; flex-direction:column; justify-content:center; align-items:center; color:white; font-size:16px;">
-    <div style="width:300px; padding:20px; background:#141c26; border-radius:12px; border:1px solid #35d0ff;">
-        <div style="font-weight:bold; margin-bottom:10px;" id="loadingTitle">작업 데이터 저장 준비 중...</div>
-        <div id="progressBarContainer" style="height:10px; background:#0b0c10; border-radius:5px; overflow:hidden;">
-            <div id="progressBar" style="height:100%; width:0; background:#ffd54f;"></div>
-        </div>
-        <div id="progressText" style="margin-top:10px; text-align:right;">0%</div>
-    </div>
-</div>
-
 <script>
-    // 1. Firebase 설정 정보 (사용자님의 고유 키가 포함됨)
-    const firebaseConfig = {
-        apiKey: "AIzaSyBcPS6qESHwa9Y9RMKfocKesffILk_FIT8",
-        authDomain: "knitverse-storyboard-project.firebaseapp.com",
-        projectId: "knitverse-storyboard-project",
-        storageBucket: "knitverse-storyboard-project.firebasestorage.app",
-        messagingSenderId: "411428209337",
-        appId: "1:411428209337:web:1c6c0df694bf12c4851168",
-        measurementId: "G-B66MGKHE8S"
-    };
-
-    // 2. Firebase 앱 초기화 및 Firestore 인스턴스 생성
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Firestore에 저장할 문서 ID (모든 스토리보드 데이터는 이 하나의 문서에 저장됨)
-    const STORYBOARD_DOC_ID = 'knitverse-main-data';
-</script>
-
-
-<script>
-/* =========================
-   V11.0: 관리자 모드 로직 추가
-========================= */
 let isAdminMode = false;
-// V11.0: 관리자 모드 확인 및 비밀번호 설정
+// V12.0: 관리자 모드 확인 및 비밀번호 설정 (Firebase 제거)
 function checkAdminMode() {
     const urlParams = new URLSearchParams(window.location.search);
+    // V12.0: 관리자 모드 진입 시도
     if (urlParams.get('admin') === 'true') {
-        // 비밀번호 설정: 'knitverse2025' 대신 원하는 비밀번호를 설정하세요.
         const password = prompt("관리자 모드 접속을 위해 비밀번호를 입력해주세요."); 
+        // 비밀번호 설정: 'knitverse2025'
         if (password === 'knitverse2025') { 
             isAdminMode = true;
             // 모든 .admin-only 클래스의 display: none을 해제합니다.
             document.querySelectorAll('.admin-only').forEach(el => {
                 const tagName = el.tagName.toLowerCase();
+                // 버튼, 입력 필드 등은 inline-block 또는 flex로
                 if (['button', 'input', 'label'].includes(tagName)) {
                     el.style.display = 'inline-block';
                 } else if (['div', 'section'].includes(tagName) || el.classList.contains('flow-tools') || el.classList.contains('imgTools') || el.classList.contains('structTools')) {
@@ -282,7 +248,15 @@ function checkAdminMode() {
         }
     }
 }
+</script>
 
+
+<script>
+/* =========================
+   V8.0/V12.0 핵심 로직 시작 (LZ-String 압축 기반)
+========================= */
+const $ = id => document.getElementById(id);
+const LZ = window.LZString; 
 
 /* =========================
    플로우 정의 (5개) 
@@ -297,104 +271,35 @@ const BASE_FLOWS=[
    {title:'완료',body:'주문 완료', slots:[{key:'core', name:'완료 핵심', content:'완료 핵심'},{key:'link', name:'마이페이지로 이동', content:'마이페이지로 이동'},{key:'metric', name:'재방문 유도', content:'재방문 유도'}]}
   ]},
  {key:'rookie',  title:'루키 · 성장 플로우', map:['home','apply','klgc','upload','publish'], steps:[{title:'HOME',body:'APPLY 클릭'},{title:'Apply Form',body:'아티스트 지원 폼'},{title:'K-LGC',body:'4주 커리큘럼 단계'},{title:'Upload',body:'상품 업로드'},{title:'Publish',body:'상품 공개 완료'}]},
- {key:'learner', title:'학습자 · 클래스 플로우', map:['home','classes','detail','enroll','play'], steps:[{title:'HOME',body:'클래스 탭 클릭'},{title:'Class List',body:'강의 목록'},{title:'Detail',body:'강의 상세 설명'},{key:'enroll', name:'수강 등록', content:'수강 등록'},{key:'player', name:'강의 재생', content:'강의 재생'}]},
+ {key:'learner', title:'학습자 · 클래스 플로우', map:['home','classes','detail','enroll','play'], steps:[{title:'HOME',body:'클래스 탭 클릭'},{title:'Class List',body:'강의 목록'},{title:'Detail',body:'강의 상세 설명'},{title:'수강 등록',body:'수강 등록'},{title:'강의 재생',body:'강의 재생'}]},
  {key:'creator', title:'액티브/마스터 작가 플로우', map:['home','classes','create','sell','legacy'], steps:[{title:'HOME',body:'MY PAGE에서 크리에이터 허브 진입'},{title:'클래스 개설',body:'커리큘럼/가격/언어 설정'},{title:'상품화',body:'키트/도안 번들 구성 · 재고'},{title:'판매/프로모션',body:'런칭 · 팬/커뮤니티 프로모션'},{title:'레거시 축적',body:'멘토링/평가 · 레거시 스코어 상승'}]},
- {key:'support', title:'서포터즈 플로우', map:['home','community','apply','board','credit'], steps:[{title:'HOME',body:'COMMUNITY 진입'},{title:'Supporter Hub',body:'역할 선택/가용성 설정'},{title:'Apply',body:'프로필 제출'},{title:'Matching Board',body:'프로젝트 매칭/승인'},{title:'크레딧 & 보상',content:'K-Points 적립/정산'}]}
+ {key:'support', title:'서포터즈 플로우', map:['home','community','apply','board','credit'], steps:[{title:'HOME',body:'COMMUNITY 진입'},{title:'Supporter Hub',body:'역할 선택/가용성 설정'},{title:'Apply',body:'프로필 제출'},{title:'Matching Board',body:'프로젝트 매칭/승인'},{title:'크레딧 & 보상',body:'K-Points 적립/정산'}]}
 ];
+
+
 /* =========================
-   상태 & 저장 키 + 헬퍼 (V5.0 키 유지)
+   상태 & 저장 키 + 헬퍼 (V8.0 키 유지)
 ========================= */
 let flows = [];
 let currentFlowIdx = 0;
 let currentStep = 0;
+let editMode = false; // V5.5: editMode 제거 (adminMode로 대체)
 
 const STORAGE = {
-  ORDER: 'kv_v50_flow_order', 
-  SRC:   'kv_v50_src',
-  MODE:  'kv_v50_mode',
-  IMGS:  'kv_v50_images',
-  PINS:  'kv_v50_pins',
-  SPINS: 'kv_v50_struct_pins', 
-  FLOWS: 'kv_v50_flows',   
-  STATE: 'kv_v50_state', // (로컬 저장소 유지)
-  // V6.1: 모든 저장 키 리스트 (Export 용도)
+  ORDER: 'kv_v50_flow_order', // 플로우 순서 
+  SRC:   'kv_v50_src',        // Iframe 소스 경로
+  MODE:  'kv_v50_mode',       // 현재 표시 모드 (iframe/images)
+  IMGS:  'kv_v50_images',     // 이미지 데이터 (base64)
+  PINS:  'kv_v50_pins',       // 이미지 핀 데이터
+  SPINS: 'kv_v50_struct_pins',// 구조 핀 데이터
+  FLOWS: 'kv_v50_flows',      // 전체 플로우 구조/내용
+  STATE: 'kv_v50_state',      // 현재 인덱스
   ALL_KEYS: ['kv_v50_flow_order', 'kv_v50_src', 'kv_v50_mode', 'kv_v50_images', 'kv_v50_pins', 'kv_v50_struct_pins', 'kv_v50_flows', 'kv_v50_state']
 };
 
-// V8.0: Base64 <-> Blob URL 변환 시 캐싱을 위한 전역 맵
-const BLOB_URL_CACHE = {}; 
-const LZ = window.LZString;
+const BLOB_URL_CACHE = {}; // V8.0: Base64 <-> Blob URL 변환 시 캐싱을 위한 전역 맵
 
-// V10.0: LocalStorage 대신 Firebase를 사용하도록 모든 저장/불러오기 함수 교체
-
-/* =========================
-   V10.0: Firebase 데이터 저장/불러오기 헬퍼 (LocalStorage 대체)
-========================= */
-
-// Firestore에서 데이터 불러오기 (비동기 처리 필요)
-async function getDB(key) {
-    try {
-        const doc = await db.collection("storyboard").doc(STORYBOARD_DOC_ID).get();
-        if (doc.exists) {
-            const data = doc.data();
-            // 특정 키(FLOWS, IMGS 등)에 해당하는 값만 반환
-            return data[key] || null; 
-        }
-        return null;
-    } catch (e) {
-        console.error("Firebase read error:", e);
-        return null;
-    }
-}
-
-// Firestore에 데이터 저장하기 (비동기 처리 필요)
-async function setDB(key, val) {
-    // V11.0: 관리자 모드가 아닐 경우 쓰기를 막습니다.
-    if (!isAdminMode) {
-        console.warn("읽기 전용 모드에서는 DB 저장을 시도할 수 없습니다.");
-        return false;
-    }
-
-    try {
-        // FLOWS, IMGS 등의 객체/배열 형태로 저장
-        await db.collection("storyboard").doc(STORYBOARD_DOC_ID).set({
-            [key]: val
-        }, { merge: true }); // 기존 데이터는 유지하고 해당 키만 업데이트
-
-        return true;
-    } catch (e) {
-        console.error("Firebase write error:", e);
-        return false;
-    }
-}
-
-// V10.0: UUID 함수 유지
 function uuid(){ return Math.random().toString(36).slice(2,10); } 
-
-// V10.0: 로컬 상태 저장/복원 함수는 기존 로직을 유지 (STATE만 사용)
-function getLS(key, def){ try{ return JSON.parse(localStorage.getItem(key) || JSON.stringify(def)); } catch(e){ return def; } }
-function setLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-
-// V10.0: DB 저장/로드 함수 재정의 (기존 setLS/getLS 호출 대체)
-async function loadFlowsFromDB(){ return await getDB(STORAGE.FLOWS); }
-async function saveFlowsToDB(flowsArr){ return await setDB(STORAGE.FLOWS, flowsArr); }
-
-async function getImagesFromDB(){ return await getDB(STORAGE.IMGS); }
-async function setImagesToDB(data){ return await setDB(STORAGE.IMGS, data); }
-
-async function getPinsFromDB(){ return await getDB(STORAGE.PINS); }
-async function setPinsToDB(data){ return await setDB(STORAGE.PINS, data); }
-
-async function getStructPinsFromDB(){ return await getDB(STORAGE.SPINS); }
-async function setStructPinsToDB(data){ return await setDB(STORAGE.SPINS, data); }
-
-async function getSrcFromDB(){ return await getDB(STORAGE.SRC); }
-async function setSrcToDB(v){ return await setDB(STORAGE.SRC, v); }
-
-
-/* =========================
-   Base64 <-> Blob/URL + LZ-String 헬퍼 
-========================= */
 
 // V8.0: 압축 헬퍼
 function compressData(base64) {
@@ -420,1130 +325,1275 @@ function decompressData(data) {
     }
 }
 
+/* =========================
+   Local Storage (LS) 헬퍼
+========================= */
 
-// V7.0: Blob URL을 Base64 문자열로 변환 (비동기)
-function urlToBase64(url) {
-    return new Promise((resolve, reject) => {
-        if (!url || !url.startsWith('blob:')) {
-            resolve({url: url, base64: url});
-            return;
+// V8.0: getLS/setLS 유지 (LZ-String 지원)
+function getLS(key, def){ 
+    try{ 
+        const raw = localStorage.getItem(key);
+        if(!raw) return def;
+        
+        // V8.0: LZ-String 압축 해제 시도
+        const decompressed = decompressData(raw);
+        
+        return JSON.parse(decompressed); 
+    } catch(e){ 
+        console.error("Error retrieving or parsing LS:", key, e);
+        // 파싱 오류 시 원시 데이터가 JSON이 아닐 수 있으므로 raw를 그대로 반환하거나 def 반환
+        try {
+            return JSON.parse(raw) || def;
+        } catch(e2) {
+            return def; 
         }
-
-        fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error(`Fetch failed for Blob URL: ${url}`);
-                return response.blob();
-            })
-            .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const rawBase64 = reader.result;
-                    const compressedBase64 = compressData(rawBase64); 
-                    resolve({url: url, base64: compressedBase64});
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            })
-            .catch(error => {
-                console.warn(`[Export Warning] Failed to convert Blob URL to Base64: ${url}`, error);
-                resolve({url: url, base64: url, error: true}); 
-            });
-    });
+    } 
 }
 
-// V8.0: Base64 문자열을 Blob URL로 복원 (LZ-String 해제 및 디코딩 안정성 강화)
-function base64ToUrl(compressedBase64) {
-    if (!compressedBase64 || !(compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-        return compressedBase64;
+function setLS(key, val){ 
+    try {
+        const jsonStr = JSON.stringify(val);
+        // V8.0: LZ-String 압축 후 저장
+        const compressed = compressData(jsonStr); 
+        localStorage.setItem(key, compressed); 
+    } catch(e) {
+        console.error("Error setting LS:", key, e);
+        // 오류 발생 시 압축 없이 시도
+        try {
+            localStorage.setItem(key, JSON.stringify(val));
+        } catch(e2) {
+            console.error("Failed to set LS even without compression:", key, e2);
+        }
     }
+}
 
-    if (BLOB_URL_CACHE[compressedBase64]) {
-        return BLOB_URL_CACHE[compressedBase64];
-    }
+// V12.0: 저장/복원 함수는 기존 LS 로직을 사용 (Firebase 로직 모두 제거)
+function getSrc(){ return getLS(STORAGE.SRC, null); }
+function setSrc(v){ setLS(STORAGE.SRC, v); }
+function getMode(){ return getLS(STORAGE.MODE, 'iframe'); }
+function setMode(v){ setLS(STORAGE.MODE, v); }
 
-    const base64 = decompressData(compressedBase64);
+function getPins(flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.PINS, {}); 
+    if(!o[flowKey]) o[flowKey]={};
+    if(!o[flowKey][step]) o[flowKey][step]=[];
+    return o[flowKey][step];
+}
+function setPins(list, flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.PINS, {});
+    if(!o[flowKey]) o[flowKey]={};
+    o[flowKey][step]=list;
+    setLS(STORAGE.PINS, o); 
+    saveState();
+}
 
-    if (!base64 || !base64.startsWith('data:')) {
-        console.error("Error: Decompressed data is not a valid Base64 string.");
+function structPins(flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.SPINS, {}); 
+    if(!o[flowKey]) o[flowKey]={};
+    if(!o[flowKey][step]) o[flowKey][step]=[];
+    return o[flowKey][step];
+}
+function setStructPins(list, flowKey=activeFlow().key, step=currentStep){
+    const o = getLS(STORAGE.SPINS, {});
+    if(!o[flowKey]) o[flowKey]={};
+    o[flowKey][step]=list;
+    setLS(STORAGE.SPINS, o); 
+    saveState();
+}
+
+function getImages(){ return getLS(STORAGE.IMGS, {}); }
+function setImages(data){ setLS(STORAGE.IMGS, data); }
+
+function getFlowsFromLS(){ return getLS(STORAGE.FLOWS, null); }
+function saveFlowsToLS(flowsArr){ setLS(STORAGE.FLOWS, flowsArr); }
+
+
+/* =========================
+   Base64 <-> Blob/URL + LZ-String 
+========================= */
+
+function base64ToURL(base64){
+    if(BLOB_URL_CACHE[base64]) return BLOB_URL_CACHE[base64];
+
+    // V8.0: LZ 압축된 데이터를 디코딩
+    const data = decompressData(base64);
+    if (!data || !data.startsWith('data:')) {
+        console.error("Invalid base64 data after decompression:", data);
         return ''; 
     }
-
-    try {
-        const parts = base64.split(';base64,');
-        if (parts.length !== 2) {
-            console.error("Invalid Base64 format during decoding.");
-            return '';
-        }
-
-        const contentTypeMatch = parts[0].match(/:(.*?)$/);
-        const contentType = contentTypeMatch ? contentTypeMatch[1] : 'image/png'; 
-
-        const raw = window.atob(parts[1]);
-        const rawLength = raw.length;
-        const uInt8Array = new Uint8Array(new ArrayBuffer(rawLength)); 
-
-        for (let i = 0; i < rawLength; ++i) {
-            uInt8Array[i] = raw.charCodeAt(i);
-        }
-        const blob = new Blob([uInt8Array], { type: contentType });
-        const url = URL.createObjectURL(blob);
-
-        BLOB_URL_CACHE[compressedBase64] = url;
-        return url;
-
-    } catch (e) {
-        console.error("Error decoding Base64 to Blob, returning empty string:", e);
+    
+    // 데이터 URL에서 MIME 타입과 데이터 분리
+    const parts = data.split(';base64,');
+    if (parts.length !== 2) {
+        console.error("Invalid data URI format:", data);
         return '';
     }
+
+    const mime = parts[0].split(':')[1];
+    const base64Data = parts[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mime });
+    
+    const url = URL.createObjectURL(blob);
+    BLOB_URL_CACHE[base64] = url; // 캐싱
+    return url;
 }
 
-// V10.0: 초기화 시점에 DB에서 이미지 데이터를 불러와 Blob URL로 변환 (Base64 원본은 DB에 유지)
-async function restoreImagesFromDB() {
-    // V10.0: 이미지 데이터를 DB에서 불러옴
-    const imgsData = await getImagesFromDB() || {}; 
-    let hasRestored = false;
-    const urlMap = {}; 
+// V8.0: 이미지 선택 시 base64로 변환 후 LZ 압축하여 저장
+function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // V8.0: 압축하여 저장
+            const compressed = compressData(e.target.result); 
+            resolve(compressed);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
-    for (const flowKey in imgsData) {
-        const flowData = imgsData[flowKey];
-        if (flowData) {
-            // Gallery URL 복원 (Base64 -> Blob URL)
-            if (flowData.gallery && Array.isArray(flowData.gallery)) {
-                flowData.gallery = flowData.gallery.map(compressedBase64 => {
-                    if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                        if (!urlMap[compressedBase64]) {
-                            urlMap[compressedBase64] = base64ToUrl(compressedBase64);
-                        }
-                        hasRestored = true;
-                        return urlMap[compressedBase64];
-                    }
-                    return compressedBase64;
-                });
-            }
-
-            // StepMap URL 복원 (Base64 -> Blob URL)
-            if (flowData.stepMap) {
-                for (const step in flowData.stepMap) {
-                    const compressedBase64 = flowData.stepMap[step];
-                    if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                        if (!urlMap[compressedBase64]) {
-                            urlMap[compressedBase64] = base64ToUrl(compressedBase64);
-                        }
-                        flowData.stepMap[step] = urlMap[compressedBase64];
-                        hasRestored = true;
-                    }
-                }
-            }
+// V8.0: 캐시된 Blob URL 해제
+function cleanupBlobUrls(){
+    for(const url in BLOB_URL_CACHE){
+        if(BLOB_URL_CACHE.hasOwnProperty(url)){
+            URL.revokeObjectURL(BLOB_URL_CACHE[url]);
         }
     }
-
-    if (hasRestored) {
-        // V10.0: 복원된 Blob URL을 다시 로컬 스토리지에 임시 저장 (휘발성 데이터)
-        setLS(STORAGE.IMGS, imgsData);
-    }
-
-    return imgsData;
-}
-
-
-/* =========================
-   초기화 (플로우 순서 복원 & 병합) - V10.0 Firebase 연동
-========================= */
-async function initFlows(){ 
-  // 1. FLOWS 데이터를 Firebase에서 불러오기
-  const saved = await loadFlowsFromDB(); 
-
-  if(saved && Array.isArray(saved) && saved.length){
-    flows = saved;
-    // V5.5: 저장된 플로우 데이터에 슬롯이 없으면 기본 슬롯 추가 (기존 호환성 로직 유지)
-    flows.forEach(f => {
-        f.steps.forEach(s => {
-            if(!s.slots){
-                 s.slots = [
-                    {key:'core', name:'핵심 요소', content: s.core || '핵심 요소'},
-                    {key:'link', name:'연결', content: '다음 화면으로 넘어가는 트리거'},
-                    {key:'metric', name:'메트릭', content: '전환/이탈 포인트, GA 이벤트'}
-                ];
-            }
-            if(!s.body) s.body = '설명 없음';
-        });
-    });
-  }else{
-    // Firebase에 데이터가 없을 경우 기본값으로 초기화
-    const processedBaseFlows = BASE_FLOWS.map(f => ({
-        ...f,
-        steps: f.steps.slice(0, 5),
-        map: f.map.slice(0, 5)
-    }));
-
-    const processedByKey = Object.fromEntries(processedBaseFlows.map(f=>[f.key, f]));
-    const order = getLS(STORAGE.ORDER, BASE_FLOWS.map(f=>f.key)); 
-    flows = order.map(k => processedByKey[k] || processedBaseFlows.find(f=>f.key === k) || null).filter(Boolean);
-    processedBaseFlows.forEach(f=>{ if(!flows.find(x=>x.key===f.key)) flows.push(f); });
-
-    // 초기 기본값을 Firebase에 저장 (최초 1회 실행)
-    if (isAdminMode) { // V11.0: 관리자 모드에서만 초기 데이터 쓰기 허용
-        await saveFlowsToDB(flows);
-    }
-  }
-
-  // 2. 이미지 데이터 로드 및 복원
-  await restoreImagesFromDB();
-
-  // 3. SRC, PINS, SPINS 데이터도 DB에서 불러와 로컬 스토리지에 복원
-  const src = await getSrcFromDB();
-  if (src) setLS(STORAGE.SRC, src);
-
-  const pins = await getPinsFromDB();
-  if (pins) setLS(STORAGE.PINS, pins);
-
-  const structPins = await getStructPinsFromDB();
-  if (structPins) setLS(STORAGE.SPINS, structPins);
+    Object.keys(BLOB_URL_CACHE).forEach(key => delete BLOB_URL_CACHE[key]);
 }
 
 /* =========================
-   세션 상태 저장/복원
+   상태 관리 (State)
 ========================= */
-// V10.0: 현재 인덱스(STATE)만 로컬 스토리지 사용
+
+function activeFlow(){ return flows[currentFlowIdx]; }
+
 function saveState(){
-  setLS(STORAGE.STATE, { flowIdx: currentFlowIdx, stepIdx: currentStep });
+    setLS(STORAGE.STATE, {flow: currentFlowIdx, step: currentStep});
 }
+
 function loadState(){
-  const s = getLS(STORAGE.STATE, null);
-  if(!s) return;
-  currentFlowIdx = Math.min(Math.max(0, s.flowIdx||0), flows.length-1);
-  currentStep    = Math.min(Math.max(0, s.stepIdx||0), flowLen()-1);
+    const state = getLS(STORAGE.STATE, {flow: 0, step: 0});
+    currentFlowIdx = state.flow;
+    currentStep = state.step;
 }
+
 
 /* =========================
-   Structure: 핀/메모 + 카드 데이터
+   핵심 렌더링 함수
 ========================= */
-// V10.0: 핀 데이터는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
-async function structPins(flowKey=activeFlow().key, step=currentStep){
-  const o = getLS(STORAGE.SPINS, {}); 
-  // V10.0: DB 연동 후 로컬 스토리지에 캐시된 데이터 사용
-  if(!o[flowKey]) o[flowKey]={};
-  if(!o[flowKey][step]) o[flowKey][step]=[];
-  return o[flowKey][step];
-}
-async function setStructPins(list, flowKey=activeFlow().key, step=currentStep){
-  const o = getLS(STORAGE.SPINS, {});
-  if(!o[flowKey]) o[flowKey]={};
-  o[flowKey][step]=list;
-  setLS(STORAGE.SPINS, o); 
-  await setStructPinsToDB(o); // ✨ DB에 영구 저장
-  saveState();
+
+function renderFlowList(){
+    const list = $('flowList');
+    list.innerHTML = '';
+    flows.forEach((f, idx) => {
+        const el = document.createElement('div');
+        el.className = `flow ${idx === currentFlowIdx ? 'active' : ''}`;
+        el.draggable = isAdminMode; // V12.0: 관리자 모드일 때만 드래그 가능
+        el.dataset.idx = idx;
+        el.dataset.key = f.key;
+        el.innerHTML = `
+            <div class="meta">${idx+1}. <span class="step-count">(${f.steps.length}단계)</span></div>
+            <div class="meta-content">${f.title}</div>
+            <div class="reord" style="display:none"></div>
+        `;
+        el.onclick = () => {
+            currentFlowIdx = idx;
+            currentStep = 0;
+            renderAll();
+            saveState();
+        };
+        list.appendChild(el);
+    });
+
+    if(isAdminMode) initFlowDragDrop(); // V12.0: 관리자 모드일 때만 드래그앤드롭 활성화
 }
 
-// Structure 카드 데이터 렌더링 (로직 유지)
 function renderStructure(){
-  const f=activeFlow(), s=activeStepData();
-
-  const flowStepsSummary = f.steps.map(step => step.title).join(' - ');
-
-  let slotsHtml = '';
-  if(s.slots && Array.isArray(s.slots)){
-    slotsHtml = s.slots.map((slot, index) => `
-      <div class="card" data-key="${slot.key}" data-slot-name="${slot.name}" draggable="true" data-index="${index}">
-        <strong>${slot.name} (${slot.key.toUpperCase().split('_')[0]})</strong>
-        <div class="meta-content">${slot.content || ''}</div>
-      </div>
-    `).join('');
-  }
-
-  $('structBody').innerHTML = `
-    <h2 id="stepTitle" class="editable-title admin-only">${s.title}</h2>
-    <p id="stepBody" class="struct-desc editable-body admin-only">${s.body||'설명 없음'}</p>
-    <div class="grid">${slotsHtml}</div>
-    <div class="slot-tools">
-        <button class="btn admin-only" id="btnAddSlot">슬롯 추가</button>
-        <button class="btn danger admin-only" id="btnDeleteSlot">슬롯 삭제</button>
-    </div>
+    const f = activeFlow();
+    const s = f.steps[currentStep];
+    
+    let html = `
+        <h2 id="structTitle" contenteditable="${isAdminMode}">${s.title}</h2>
+        <div id="structDescription" class="struct-desc" contenteditable="${isAdminMode}">${s.body}</div>
+        <div class="grid" id="slotGrid">
     `;
 
-  $('crumbs').innerText = f.title + ' › ' + flowStepsSummary; 
-  $('bar').style.width = ((currentStep+1)/flowLen()*100)+'%';
-  $('footer').innerText = `${f.title} · Step ${currentStep+1}/${flowLen()}`;
-  $('btnPrev').disabled = currentStep===0;
-  $('btnNext').disabled = currentStep===flowLen()-1;
-
-  renderStructPinLayer();
-  attachEditListeners();
-}
-
-// 편집 리스너 부착 (로직 유지)
-function attachEditListeners(){
-    const s = activeStepData();
-
-    // 1. 단계 제목 편집
-    $('stepTitle').addEventListener('dblclick', async (e) => { // async 추가
-        if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-        const newTitle = prompt('단계 이름 변경:', s.title);
-        if (newTitle !== null && newTitle.trim() !== '') {
-            s.title = newTitle.trim();
-            await saveFlowsToDB(flows); // ✨ DB에 저장
-            renderAll();
-        }
+    s.slots.forEach((slot, idx) => {
+        html += `
+            <div class="card" data-slot="${slot.key}" data-idx="${idx}" draggable="${isAdminMode}">
+                <strong>${slot.name}</strong>
+                <div class="meta-content" contenteditable="${isAdminMode}">${slot.content}</div>
+                <div class="reord" style="display:none"></div>
+            </div>
+        `;
     });
+    
+    html += `</div>`;
+    
+    if(isAdminMode){
+        html += `
+        <div class="slot-tools admin-only">
+          <button class="btn" id="btnAddSlot">슬롯 추가</button>
+          <button class="btn" id="btnDeleteSlot">슬롯 삭제</button>
+          <div style="flex-basis:100%; height:8px;"></div>
+          <label class="small"><input type="radio" name="slotType" value="core" checked> 핵심(파랑)</label>
+          <label class="small"><input type="radio" name="slotType" value="link"> 연결(초록)</label>
+          <label class="small"><input type="radio" name="slotType" value="metric"> 메트릭(주황)</label>
+        </div>
+        `;
+    }
 
-    // 2. 단계 설명 편집
-    $('stepBody').addEventListener('dblclick', async (e) => { // async 추가
-        if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-        const newBody = prompt('단계 설명 변경:', s.body);
-        if (newBody !== null) {
-            s.body = newBody.trim() || '설명 없음';
-            await saveFlowsToDB(flows); // ✨ DB에 저장
-            renderStructure();
-        }
-    });
-
-    // 3. 슬롯 콘텐츠 편집
-    document.querySelectorAll('#structBody .card').forEach(card => {
-        card.addEventListener('dblclick', async (e) => { // async 추가
-            if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-            if(card.classList.contains('dragging')) return; 
-
-            const key = card.dataset.key;
-            const slot = s.slots.find(sl => sl.key === key);
-
-            const newContent = prompt(`'${slot.name}' 내용 수정:`, slot.content || '');
-
-            if (newContent !== null) {
-                slot.content = newContent.trim();
-                await saveFlowsToDB(flows); // ✨ DB에 저장
-                renderStructure();
-            }
+    $('structBody').innerHTML = html;
+    
+    // V12.0: 변경 감지 및 저장 이벤트 리스너 추가 (관리자 모드일 때만)
+    if(isAdminMode){
+        $('structTitle').onblur = updateTitle;
+        $('structDescription').onblur = updateDescription;
+        document.querySelectorAll('#slotGrid .card .meta-content').forEach((el, idx) => {
+            el.onblur = (e) => updateSlotContent(e, idx);
         });
-    });
-
-    // 4. 슬롯 추가 버튼
-    $('btnAddSlot').addEventListener('click', async () => { // async 추가
-        if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-        const name = prompt('새 슬롯의 이름(제목)을 입력하세요:').trim();
-        if (!name) return;
-        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 10) + uuid().slice(0,4);
-
-        s.slots.push({ key: key, name: name, content: '' });
-        await saveFlowsToDB(flows); // ✨ DB에 저장
-        renderStructure();
-    });
-
-    // 5. 슬롯 삭제 버튼
-    $('btnDeleteSlot').addEventListener('click', async () => { // async 추가
-        if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-        if (!s.slots || s.slots.length === 0) { alert('삭제할 슬롯이 없습니다.'); return; }
-
-        const slotNames = s.slots.map((sl, idx) => `${idx + 1}. ${sl.name}`).join('\n');
-        const indexStr = prompt(`삭제할 슬롯의 번호(1~${s.slots.length})를 입력하세요:\n\n${slotNames}`);
-        const index = parseInt(indexStr, 10) - 1;
-
-        if (index >= 0 && index < s.slots.length) {
-            if(confirm(`"${s.slots[index].name}" 슬롯을 삭제하시겠습니까?`)){
-                s.slots.splice(index, 1);
-                await saveFlowsToDB(flows); // ✨ DB에 저장
-                renderStructure();
-            }
-        } else if(indexStr !== null && indexStr.trim() !== ''){
-            alert('유효하지 않은 번호입니다.');
-        }
-    });
-
-    // 6. 슬롯 드래그앤드롭 (순서 변경)
-    document.querySelectorAll('#structBody .card').forEach(card => {
-        card.addEventListener('drop', async (e) => { // async 추가
-            if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-
-            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-            const toIndex = parseInt(card.dataset.index, 10);
-
-            if (fromIndex !== toIndex) {
-                const [movedItem] = s.slots.splice(fromIndex, 1);
-                s.slots.splice(toIndex, 0, movedItem);
-
-                await saveFlowsToDB(flows); // ✨ DB에 저장
-                renderStructure(); 
-            }
-        });
-    });
-}
-
-
-let structPinMode=false;
-$('structPinMode').addEventListener('change', e=>{ structPinMode = e.target.checked; });
-$('btnStructClearPins').addEventListener('click', async ()=>{ 
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-    await setStructPins([]); renderStructPinLayer(); 
-}); // async 추가
-
-function renderStructPinLayer(){
-  const layer = $('structPinLayer'); layer.innerHTML='';
-  const list = structPins(); // 동기적으로 로컬 캐시 사용
-  list.forEach((p,idx)=>{
-    const pin = document.createElement('div');
-    pin.className='pin'; pin.innerText=String(idx+1);
-    pin.style.left=p.x+'%'; pin.style.top=p.y+'%';
-    const note=document.createElement('div');
-    note.className='pinNote'; note.textContent=p.text||'(메모 없음)'; note.style.display='none';
-    pin.addEventListener('mouseenter', ()=>{ note.style.display='block'; });
-    pin.addEventListener('mouseleave', ()=>{ note.style.display='none'; });
-    pin.addEventListener('click', async (ev)=>{ // async 추가
-      if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-      ev.stopPropagation();
-      const v = prompt('핀 수정 (비우면 삭제)', p.text||'');
-      if(v===null) return;
-      const arr=list.slice();
-      if(v.trim()===''){ await setStructPins(arr.filter(x=>x.id!==p.id)); } // ✨ DB에 저장
-      else { p.text=v.trim(); await setStructPins(arr); } // ✨ DB에 저장
-      renderStructPinLayer();
-    });
-    const wrap=document.createElement('div');
-    wrap.style.position='absolute'; wrap.style.left=p.x+'%'; wrap.style.top=p.y+'%'; wrap.style.transform='translate(-50%,-50%)';
-    wrap.appendChild(pin); wrap.appendChild(note);
-    layer.appendChild(wrap);
-  });
-}
-$('structPanel').addEventListener('click', async (e)=>{ // async 추가
-  if(!structPinMode || !isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  if(e.target.closest('.structTools') || e.target.closest('.card') || e.target.closest('#stepTitle') || e.target.closest('#stepBody') || e.target.closest('.slot-tools')) return; 
-
-  const rect = $('structPanel').getBoundingClientRect();
-  const x = ((e.clientX-rect.left)/rect.width)*100;
-  const y = ((e.clientY-rect.top)/rect.height)*100;
-  const text = prompt('메모 내용을 입력하세요:');
-  if(text===null) return;
-  const list = structPins();
-  list.push({id:uuid(), x:+x.toFixed(2), y:+y.toFixed(2), text:text.trim()});
-  await setStructPins(list); renderStructPinLayer(); // ✨ DB에 저장
-
-  structPinMode = false;
-  $('structPinMode').checked = false;
-});
-/* Live: Iframe + Images */
-// V10.0: getSrc는 로컬 스토리지에 캐시된 데이터를 사용
-function getSrc(){ 
-  const src = getLS(STORAGE.SRC, '') || '';
-  if(!src) return '';
-  // V10.0: 임시 Blob URL이 남아있다면 Base64 원본으로 대체 (Export/Import 시 Base64가 아니면 의미 없음)
-  if (src.startsWith('blob:')) return ''; 
-  return src;
-}
-$('applySrc').onclick=async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const v=$('srcText').value.trim(); 
-  if(v){ 
-    await setSrcToDB(v); // ✨ DB에 저장
-    setLS(STORAGE.SRC, v);
-  }
-  updateLiveMode(localStorage.getItem(STORAGE.MODE)); 
-}; 
-$('srcFile').addEventListener('change', async e=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const f=e.target.files[0]; 
-  if(!f) return; 
-  const url = URL.createObjectURL(f);
-  await setSrcToDB(url); // ✨ DB에 임시 저장 (휘발성)
-  setLS(STORAGE.SRC, url);
-  updateLiveMode('iframe'); 
-}); 
-
-function liveHashForStep(flowKey, stepIdx){
-  const f=flows.find(x=>x.key===flowKey); const key=f.map[stepIdx];
-  const map={ home:'#home', shop:'#shop', product:'#shop', checkout:'#shop', done:'#mypage',
-              apply:'#home', klgc:'#classes', upload:'#shop', publish:'#shop',
-              classes:'#classes', detail:'#classes', enroll:'#classes', play:'#classes',
-              create:'#classes', sell:'#shop', legacy:'#mypage',
-              community:'#community', board:'#community', credit:'#mypage', next:'#home' };
-  return map[key] || '#home';
-}
-function navIframe(){
-  const hash = liveHashForStep(activeFlow().key, currentStep);
-  try{ $('liveFrame').contentWindow.location.hash=hash; }catch(e){}
-}
-/* 이미지 매핑 */
-// V10.0: 이미지 객체는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
-function ensureImgObj(){
-  let o = getLS(STORAGE.IMGS, {}); 
-  if (!o || Object.keys(o).length === 0) {
-      o = {}; // 로컬 스토리지에 없으면 빈 객체로 초기화
-  }
-  const k=activeFlow().key;
-  if(!o[k]) o[k]={ stepMap:{}, gallery:[] };
-  // DB 저장은 setImagesToDB()에서만 호출
-  return o;
-}
-function imgForStep(flowKey, stepIdx){
-  const o=getLS(STORAGE.IMGS, {}); 
-  const base64 = o?.[flowKey]?.stepMap?.[stepIdx] || '';
-  return base64ToUrl(base64); 
-}
-// V10.0: assignImages 수정 (DB 저장 로직 포함)
-function assignImages(urls, start){
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-
-  const o=ensureImgObj(); const k=activeFlow().key; const d=o[k];
-  d.gallery = (d.gallery||[]).concat(urls);
-  let s=start; urls.forEach(u=>{ if(s<flowLen()){ d.stepMap[s]=u; s++; } });
-
-  setLS(STORAGE.IMGS, o); 
-  setImagesToDB(o); // ✨ DB에 저장
-
-  localStorage.setItem(STORAGE.MODE, 'images');
-  setSrcToDB(''); // ✨ DB에 저장
-  setLS(STORAGE.SRC, '');
-
-  updateLiveMode('images');
-  renderThumbs(); renderImages();
-}
-// 썸네일 리스트 렌더링
-function renderThumbs(){
-  const o=ensureImgObj(); const k=activeFlow().key; const d=o[k];
-  const list=$('imgList'); list.innerHTML='';
-  const steps=activeFlow().steps; 
-
-  for(let i=0;i<steps.length;i++){
-    const url=imgForStep(k, i);
-    const el=document.createElement('div');
-    el.className='thumb'+(i===currentStep?' active':''); el.setAttribute('draggable',isAdminMode ? 'true' : 'false'); // V11.0
-    el.dataset.step=i;
-    el.innerHTML = (url?`<button class="del admin-only">x</button><img src="${url}">`:'') +
-                   `<div class="cap">Step ${i+1}<br>${steps[i].title}${url?'':'<br>(비어 있음)'}</div>`;
-
-    el.querySelector('.del')?.addEventListener('click', async ev=>{ // async 추가
-        if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-        ev.stopPropagation(); 
-        delete d.stepMap[i]; 
-        setLS(STORAGE.IMGS,o); 
-        await setImagesToDB(o); // ✨ DB에 저장
-        renderThumbs(); renderImages(); saveState(); 
-    }); 
-    el.addEventListener('click', (e)=>{ 
-      if(e.target.classList.contains('del')) return;
-      currentStep = i; 
-      renderAll(); 
-      saveState();
-    });
-    // 썸네일 드래그앤드롭 이벤트 리스너 (순서 변경)
-    el.addEventListener('drop', async ev=>{ // async 추가
-      if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-      ev.preventDefault(); el.classList.remove('drag-over');
-      const from=parseInt(ev.dataTransfer.getData('text/plain'),10), to=i;
-      const a=d.stepMap[from], b=d.stepMap[to];
-      if(a===undefined && b===undefined) return;
-      d.stepMap[from]=b; d.stepMap[to]=a; 
-      setLS(STORAGE.IMGS,o); 
-      await setImagesToDB(o); // ✨ DB에 저장
-      renderThumbs(); renderImages(); saveState(); 
-    });
-    list.appendChild(el);
-  }
-  const mappedCount = steps.filter((s, i) => d.stepMap[i]).length;
-  $('imgInfo').innerText = `매핑됨: ${mappedCount}/${steps.length} 단계`;
-}
-$('btnPickImages').onclick=()=>$('imgFiles').click();
-$('imgFiles').addEventListener('change', e=>{
-  const files=Array.from(e.target.files||[]); if(!files.length) return;
-  const urls=files.map(f=>URL.createObjectURL(f));
-  assignImages(urls, currentStep);
-});
-$('btnAssignFromCurrent').onclick=async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const o=ensureImgObj(); const k=activeFlow().key; const d=o[k];
-  if(!d.gallery || !d.gallery.length){ alert('먼저 이미지를 선택하세요.'); return; }
-  d.stepMap={}; let s=currentStep; d.gallery.forEach(u=>{ if(s<flowLen()){ d.stepMap[s]=u; s++; } });
-  setLS(STORAGE.IMGS,o); 
-  await setImagesToDB(o); // ✨ DB에 저장
-
-  localStorage.setItem(STORAGE.MODE, 'images');
-  await setSrcToDB(''); // ✨ DB에 저장
-  setLS(STORAGE.SRC, '');
-
-  updateLiveMode('images'); 
-  renderThumbs(); renderImages();
-  saveState();
-};
-$('btnClearMap').onclick=async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const o=ensureImgObj(); 
-  o[activeFlow().key].stepMap={}; 
-  setLS(STORAGE.IMGS,o); 
-  await setImagesToDB(o); // ✨ DB에 저장
-  renderThumbs(); renderImages(); saveState(); 
-}; 
-
-/* 이미지 핀 (Live 이미지 창 기능) */
-// V10.0: 핀 데이터는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
-async function getPins(flowKey=activeFlow().key, step=currentStep){
-  const o = getLS(STORAGE.PINS, {});
-  if(!o[flowKey]) o[flowKey]={}; 
-  if(!o[flowKey][step]) o[flowKey][step]=[];
-  return o[flowKey][step];
-}
-async function savePins(list, flowKey=activeFlow().key, step=currentStep){
-  const o=getLS(STORAGE.PINS, {}); 
-  if(!o[flowKey]) o[flowKey]={}; 
-  o[flowKey][step]=list; 
-  setLS(STORAGE.PINS, o); 
-  await setPinsToDB(o); // ✨ DB에 영구 저장
-  saveState();
-}
-let pinMode=false;
-$('pinMode').addEventListener('change', e=>{ 
-    pinMode = e.target.checked; 
-});
-$('btnClearPins').addEventListener('click', async ()=>{ 
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-    await savePins([]); renderPins(); 
-}); // async 추가
-
-$('imgBoard').addEventListener('click', async (e)=>{ // async 추가
-  if(!pinMode || !isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  if(!imgForStep(activeFlow().key, currentStep)){ alert('이 단계에 이미지가 없습니다.'); return; }
-  const rect=$('imgBoard').getBoundingClientRect();
-  const x=((e.clientX-rect.left)/rect.width)*100, y=((e.clientY-rect.top)/rect.height)*100;
-  const text=prompt('핀 설명을 입력하세요:'); if(text===null) return;
-  const list=await getPins(); // await 추가
-  list.push({id:uuid(), x:+x.toFixed(2), y:+y.toFixed(2), text:text.trim()});
-  await savePins(list); renderPins(); // ✨ DB에 저장
-
-  pinMode = false;
-  $('pinMode').checked = false;
-});
-
-function renderPins(){
-  renderPinLayer('pinLayer', getPins());
-}
-function renderPinLayer(layerId, list){
-  const layer=$(layerId); if(!layer) return; layer.innerHTML='';
-  list.forEach((p,idx)=>{
-    const pin=document.createElement('div');
-    pin.className='pin'; pin.innerText=String(idx+1);
-    pin.style.left=p.x+'%'; pin.style.top=p.y+'%';
-    const note=document.createElement('div'); note.className='pinNote'; note.textContent=p.text||'(설명 없음)'; note.style.display='none';
-    pin.addEventListener('mouseenter', ()=>{ note.style.display='block'; });
-    pin.addEventListener('mouseleave', ()=>{ note.style.display='none'; });
-    pin.addEventListener('click', async (ev)=>{ // async 추가
-      if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-      ev.stopPropagation();
-      const v=prompt('핀 수정 (비우면 삭제)', p.text||''); if(v===null) return;
-      const arr=list.slice();
-      if(v.trim()===''){ await savePins(arr.filter(x=>x.id!==p.id)); } else { p.text=v.trim(); await savePins(arr); } // ✨ DB에 저장
-      renderPins();
-    });
-    const wrap=document.createElement('div'); wrap.style.position='absolute'; wrap.style.left=p.x+'%'; wrap.style.top=p.y+'%'; wrap.style.transform='translate(-50%,-50%)';
-    wrap.appendChild(pin); wrap.appendChild(note); layer.appendChild(wrap);
-  });
-}
-function renderImages(){
-  const url = imgForStep(activeFlow().key, currentStep) || '';
-  const img = $('stepImg'); 
-  if(img) {
-    img.src=url;
-    img.alt = url ? activeStepData().title : "Step image (No image assigned)";
-  }
-  if(localStorage.getItem(STORAGE.MODE) === 'images') {
-    renderPins();
-  }
-}
-/* 이미지 캡처 기능 (기존 로직 유지) */
-$('btnExportImage').addEventListener('click', ()=>{
-    const target = $('mainContent');
-
-    const originalText = $('btnExportImage').textContent;
-    $('btnExportImage').textContent = '캡처 중...';
-    $('btnExportImage').disabled = true;
-
-    html2canvas(target, {
-        allowTaint: true,
-        useCORS: true,
-        scrollY: -window.scrollY, 
-        scale: 2 
-    }).then(canvas => {
-        const title = activeFlow().title.replace(/[^a-z0-9]/gi, '_');
-        const stepName = activeStepData().title.replace(/[^a-z0-9]/gi, '_');
-        const filename = `${title}_${stepName}_${new Date().getTime()}.png`;
-
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = filename;
-        link.click();
-
-        $('btnExportImage').textContent = originalText;
-        $('btnExportImage').disabled = false;
-        alert('화면 캡처(PNG)가 완료되었습니다.');
-    }).catch(err => {
-        console.error("캡처 실패:", err);
-        $('btnExportImage').textContent = originalText;
-        $('btnExportImage').disabled = false;
-        alert('캡처에 실패했습니다. (콘솔 로그 확인)');
-    });
-});
-
-/* V8.0: 작업 저장 (Export) 기능 - Base64 -> LZ-String 압축 적용 */
-$('btnExportWork').addEventListener('click', async () => {
-    // V10.0: DB에서 최신 데이터 불러와 로컬 스토리지에 캐시
-    const flowData = await loadFlowsFromDB();
-    const pinsData = await getPinsFromDB();
-    const structPinsData = await getStructPinsFromDB();
-    const srcData = await getSrcFromDB();
-    const imgsData = await getImagesFromDB(); // 이미지 데이터는 Blob URL이 아닌 Base64 원본을 포함함
-
-    const loadingOverlay = $('loadingOverlay');
-    const progressBar = $('progressBar');
-    const progressText = $('progressText');
-    const loadingTitle = $('loadingTitle');
-
-    loadingOverlay.style.display = 'flex';
-    loadingTitle.textContent = '작업 데이터 수집 중...';
-    progressBar.style.width = '0%';
-    progressText.textContent = '0%';
-
-    const exportButton = $('btnExportWork');
-    const originalText = exportButton.textContent;
-    exportButton.disabled = true;
-
-    const data = {};
-    const imagesToConvert = [];
-    let failureCount = 0;
-    const base64Map = {};
-
-    // 1. 모든 핵심 데이터 수집 (Firebase에서 불러온 최신 데이터 사용)
-    data[STORAGE.FLOWS] = JSON.stringify(flowData);
-    data[STORAGE.PINS] = JSON.stringify(pinsData);
-    data[STORAGE.SPINS] = JSON.stringify(structPinsData);
-    data[STORAGE.SRC] = JSON.stringify(srcData);
-    data[STORAGE.IMGS] = JSON.stringify(imgsData);
-
-    // 로컬 상태만 유지
-    data[STORAGE.ORDER] = localStorage.getItem(STORAGE.ORDER);
-    data[STORAGE.MODE] = localStorage.getItem(STORAGE.MODE);
-    data[STORAGE.STATE] = localStorage.getItem(STORAGE.STATE);
-
-    // 2. 이미지 데이터(IMGS)에서 Blob URL을 Base64로 변환할 목록 수집 (로컬에만 남아있는 임시 데이터 처리)
-    try {
-        const currentImgsData = getLS(STORAGE.IMGS, {});
-        for (const flowKey in currentImgsData) {
-            const flowData = currentImgsData[flowKey];
-            if (flowData && flowData.gallery) {
-                flowData.gallery.forEach(url => {
-                    if (url && url.startsWith('blob:')) {
-                        imagesToConvert.push(url);
-                    }
-                });
-            }
-        }
-    } catch (e) {
-        console.error("Error parsing current IMGS data for export:", e);
+        
+        $('btnAddSlot').onclick = addSlot;
+        $('btnDeleteSlot').onclick = deleteSlot;
+        
+        initSlotDragDrop();
     }
+}
 
-    const uniqueUrls = [...new Set(imagesToConvert)];
+function renderMainContent(){
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    
+    // 빵 부스러기 (Crumbs)
+    const crumbHtml = `${f.title} > ${f.steps[currentStep].title} (${currentStep + 1}/${stepCount})`
+    $('crumbs').innerHTML = crumbHtml;
 
-    // 3. Blob URL -> Base64 (압축 포함) 변환 실행
-    if (uniqueUrls.length > 0) {
+    // 진행 바
+    const percent = ((currentStep + 1) / stepCount) * 100;
+    $('bar').style.width = `${percent}%`;
 
-        loadingTitle.textContent = `이미지 ${uniqueUrls.length}개 변환 및 압축 시작`;
-
-        try {
-            const conversionPromises = uniqueUrls.map((url, index) => {
-                return urlToBase64(url).then(result => {
-                    const completed = index + 1;
-                    const percentage = Math.round((completed / uniqueUrls.length) * 100);
-
-                    if(completed % Math.ceil(uniqueUrls.length / 10) === 0 || completed === uniqueUrls.length) {
-                         progressBar.style.width = `${percentage}%`;
-                         progressText.textContent = `이미지 압축 중: ${completed}/${uniqueUrls.length} (${percentage}%)`;
-                    }
-
-                    return result;
-                });
-            });
-
-            const results = await Promise.all(conversionPromises); 
-
-            results.forEach((result) => {
-                if (result.error) {
-                    failureCount++;
-                } else {
-                    base64Map[result.url] = result.base64;
-                }
-            });
-
-            progressBar.style.width = '100%';
-            progressText.textContent = `이미지 압축 완료: ${uniqueUrls.length}/${uniqueUrls.length} (100%)`;
-            loadingTitle.textContent = '데이터 정리 중...';
-
-        } catch (error) {
-            loadingOverlay.style.display = 'none';
-            exportButton.textContent = originalText;
-            exportButton.disabled = false;
-            alert('치명적인 저장 오류: Base64 변환/압축 과정에서 예기치 않은 오류가 발생했습니다. (콘솔 로그 확인)');
-            console.error('Base64 Conversion Error (Fatal):', error);
-            return;
+    // 메인 스테이지 렌더링 (Iframe vs Images)
+    const mode = getMode();
+    const images = getImages();
+    const hasImage = images[f.key] && images[f.key][currentStep] && images[f.key][currentStep].length > 0;
+    
+    if(mode === 'iframe' && getSrc()){
+        // Iframe 모드
+        $('iframePane').style.display = 'block';
+        $('imagesPane').style.display = 'none';
+        navIframe();
+    } else if(hasImage){
+        // 이미지 모드 (이미지가 있으면 무조건 이미지 모드로 전환)
+        $('iframePane').style.display = 'none';
+        $('imagesPane').style.display = 'block';
+        setMode('images');
+        
+        const base64 = images[f.key][currentStep];
+        if(base64){
+             // V8.0: Base64 -> Blob URL 변환
+            $('stepImg').src = base64ToURL(base64); 
+            $('stepImg').style.display = 'block';
+            $('imgBoard').style.border = 'none';
+        } else {
+             $('stepImg').src = '';
+             $('stepImg').style.display = 'none';
+             $('imgBoard').style.border = '1px dashed #234';
         }
-    }
-
-    // 4. IMGS 데이터 내의 모든 Blob URL을 압축된 Base64 문자열로 대체
-    let exportImgsData = JSON.parse(data[STORAGE.IMGS] || '{}');
-    for (const flowKey in exportImgsData) {
-        const flowData = exportImgsData[flowKey];
-        if (flowData) {
-            // gallery URL 대체
-            if (flowData.gallery) {
-                flowData.gallery = flowData.gallery.map(url => base64Map[url] || url);
-            }
-            // stepMap URL 대체
-            if (flowData.stepMap) {
-                for (const step in flowData.stepMap) {
-                    const url = flowData.stepMap[step];
-                    flowData.stepMap[step] = base64Map[url] || url;
-                }
-            }
-        }
-    }
-
-    // 5. 최종 데이터에 업데이트된 IMGS 저장 및 파일 다운로드
-    data[STORAGE.IMGS] = JSON.stringify(exportImgsData);
-
-    const dataStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-
-    let filename = $('saveFileName').value.trim();
-    if (filename === '') {
-        filename = `knitverse_storyboard_data_${activeFlow().title.replace(/[^a-z0-9]/gi, '_')}`;
-    }
-    filename += `_${new Date().getTime()}.json`;
-
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-
-    loadingOverlay.style.display = 'none';
-    exportButton.textContent = originalText;
-    exportButton.disabled = false;
-
-    if (failureCount > 0) {
-        alert(`저장 완료: ${failureCount}개의 이미지를 변환하는 데 실패했습니다. (콘솔 로그 확인)`);
+        renderPins();
     } else {
-        alert('작업 데이터가 JSON 파일로 성공적으로 저장되었습니다. (LZ-String 압축 적용)');
+        // 기본 모드 (이미지도 없고 Iframe도 없거나 설정되지 않음)
+        $('iframePane').style.display = 'none';
+        $('imagesPane').style.display = 'block';
+        $('stepImg').src = '';
+        $('stepImg').style.display = 'none';
+        $('imgBoard').style.border = '1px dashed #234';
+        $('imgBoard').innerHTML = `<div class="hint">이미지 또는 Live Demo를 연결해주세요.</div><div class="pinLayer" id="pinLayer"></div>`;
+        setMode('images');
     }
-});
+}
 
-/* V8.0: 작업 불러오기 (Import) 기능 - LZ-String 압축 해제 적용 */
-$('btnImportWork').addEventListener('click', () => {
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-    $('workFile').click();
-});
-$('workFile').addEventListener('change', (e) => {
+
+function renderThumbs(){
+    const list = $('imgList');
+    list.innerHTML = '';
+    const f = activeFlow();
+    const images = getImages()[f.key] || {};
+    
+    f.steps.forEach((s, stepIdx) => {
+        const base64 = images[stepIdx] || null;
+        if(!base64) return; // 이미지가 없는 단계는 썸네일 표시 안 함
+        
+        const el = document.createElement('div');
+        el.className = `thumb ${stepIdx === currentStep ? 'active' : ''}`;
+        el.draggable = isAdminMode; // V12.0: 관리자 모드일 때만 드래그 가능
+        el.dataset.idx = stepIdx;
+
+        const imgUrl = base64ToURL(base64);
+        
+        el.innerHTML = `
+            <img src="${imgUrl}" alt="${s.title} 썸네일">
+            <div class="cap">${s.title}</div>
+            <div class="del admin-only" data-step="${stepIdx}">X</div>
+        `;
+        
+        el.onclick = () => {
+            currentStep = stepIdx;
+            renderAll();
+            saveState();
+        };
+
+        list.appendChild(el);
+    });
+    
+    // V12.0: 핀/썸네일 삭제 버튼 이벤트 리스너 추가
+    if(isAdminMode) {
+        document.querySelectorAll('.thumb .del').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation(); // 썸네일 클릭 이벤트 방지
+                const stepIdx = parseInt(e.target.dataset.step);
+                deleteImage(stepIdx);
+            };
+        });
+        
+        initThumbDragDrop();
+    }
+}
+
+
+function renderAll(){
+    // 렌더링 전에 캐시 정리
+    cleanupBlobUrls(); 
+    
+    renderFlowList();
+    renderStructure();
+    renderMainContent();
+    renderThumbs();
+    
+    renderStructPins();
+}
+
+
+/* =========================
+   초기화 및 데이터 로드/저장
+========================= */
+
+// V12.0: 플로우 배열 초기화 (LS에 없으면 BASE_FLOWS 사용)
+function initFlows(){
+    const loadedFlows = getFlowsFromLS();
+    if(loadedFlows){
+        flows = loadedFlows;
+    } else {
+        flows = JSON.parse(JSON.stringify(BASE_FLOWS)); // 깊은 복사
+        saveFlowsToLS(flows);
+    }
+}
+
+// V12.0: 초기 시작 함수
+(function init(){
+  checkAdminMode(); // 관리자 모드 체크 및 UI 변경
+  
+  initFlows();
+  loadState();
+  
+  // V12.0: 이벤트 리스너 연결 (관리자 모드와 관계없이 연결)
+  $('btnPrev').addEventListener('click', () => {
+      if(currentStep > 0) currentStep--;
+      renderAll(); navIframe(); saveState();
+  });
+  $('btnNext').addEventListener('click', () => {
+      if(currentStep < activeFlow().steps.length-1) currentStep++;
+      renderAll(); navIframe(); saveState();
+  });
+  $('btnExportImage').addEventListener('click', exportImage);
+  
+  // 관리자 모드 전용 이벤트 리스너
+  if(isAdminMode) {
+    initAdminListeners();
+  }
+  
+  // 최초 렌더링
+  renderAll();
+})();
+
+// V12.0: 관리자 모드 전용 리스너를 한 곳에 모음
+function initAdminListeners(){
+    // 플로우 툴
+    $('btnAddFlow').addEventListener('click', addFlow);
+    $('btnRenameFlow').addEventListener('click', renameFlow);
+    $('btnDeleteFlow').addEventListener('click', deleteFlow);
+    
+    // Live Demo 툴
+    $('applySrc').addEventListener('click', () => setSrc($('srcText').value.trim()));
+    $('srcFile').addEventListener('change', loadSrcFile);
+    
+    // 이미지 툴
+    $('btnPickImages').addEventListener('click', () => $('imgFiles').click());
+    $('imgFiles').addEventListener('change', uploadImages);
+    $('btnAssignFromCurrent').addEventListener('click', assignFromCurrent);
+    $('btnClearMap').addEventListener('click', clearImageMap);
+
+    // 핀 툴 (이미지)
+    $('imgBoard').addEventListener('click', handlePinClick);
+    $('btnClearPins').addEventListener('click', clearPins);
+    $('pinMode').addEventListener('change', () => {
+        $('imgBoard').style.cursor = $('pinMode').checked ? 'crosshair' : 'default';
+    });
+
+    // 핀 툴 (구조)
+    $('structPinMode').addEventListener('change', () => {
+        $('structBody').style.cursor = $('structPinMode').checked ? 'crosshair' : 'default';
+    });
+    $('structPanel').addEventListener('click', handleStructPinClick);
+    $('btnStructClearPins').addEventListener('click', clearStructPins);
+
+    // JSON Export/Import 툴
+    $('btnExportWork').addEventListener('click', exportWork);
+    $('btnImportWork').addEventListener('click', () => $('workFile').click());
+    $('workFile').addEventListener('change', importWork);
+    
+    // UI 업데이트 (소스 경로 표시)
+    $('srcText').value = getSrc() || '';
+    $('srcStatus').textContent = getSrc() ? `현재: ${getSrc()}` : '현재: 연결되지 않음';
+
+}
+
+/* =========================
+   JSON Export / Import (V12.0: 중앙 관리 솔루션)
+========================= */
+
+function exportWork() {
+    // 모든 LocalStorage 데이터를 추출합니다.
+    const exportData = {};
+    STORAGE.ALL_KEYS.forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data) {
+            exportData[key] = data;
+        }
+    });
+
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    const filename = ($('saveFileName').value.trim() || 'knitverse_project') + '.json';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert(`[${filename}] 파일로 작업 데이터가 성공적으로 저장되었습니다.`);
+}
+
+function importWork(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!confirm('경고: 현재 작업 내용은 모두 삭제되고, 선택한 파일의 데이터로 덮어쓰여집니다. 계속하시겠습니까?')) {
-        $('workFile').value = ''; 
-        return;
-    }
+    if (!confirm("현재 로컬 작업 데이터는 덮어쓰기되고 삭제됩니다. 복원하시겠습니까?")) return;
 
     const reader = new FileReader();
-    reader.onload = async function(event) { // async 추가
+    reader.onload = (event) => {
         try {
-            const importedData = JSON.parse(event.target.result);
+            const importData = JSON.parse(event.target.result);
 
-            // 1. 모든 데이터를 Firebase에 덮어쓰기
-            const promises = STORAGE.ALL_KEYS.map(key => {
-                if (importedData[key] !== undefined) {
-                    let value = JSON.parse(importedData[key]);
-                    return setDB(key, value); // DB에 직접 저장
+            // 기존 데이터 삭제
+            STORAGE.ALL_KEYS.forEach(key => localStorage.removeItem(key));
+            
+            // 새 데이터 로드
+            for (const key in importData) {
+                if (STORAGE.ALL_KEYS.includes(key)) {
+                    localStorage.setItem(key, importData[key]);
                 }
-                return Promise.resolve();
-            });
+            }
 
-            await Promise.all(promises);
+            // 모든 것을 초기화하고 다시 렌더링
+            initFlows();
+            loadState();
+            renderAll();
+            
+            // Iframe 소스 경로 업데이트
+            $('srcText').value = getSrc() || '';
+            $('srcStatus').textContent = getSrc() ? `현재: ${getSrc()}` : '현재: 연결되지 않음';
 
-            // 2. 로컬 스토리지에 임시 상태 복원 (Import 후 새로고침 시 Firebase에서 데이터를 다시 불러올 것임)
-            STORAGE.ALL_KEYS.forEach(key => {
-                if (importedData[key] !== undefined) {
-                    localStorage.setItem(key, importedData[key]);
-                }
-            });
-
-            alert('작업 데이터 및 이미지가 Firebase에 성공적으로 저장되었습니다. 페이지를 새로고침하여 적용합니다.');
-            window.location.reload(); 
-
+            alert("작업 데이터가 성공적으로 복원되었습니다. (새로고침 없이 바로 적용됨)");
         } catch (error) {
-            alert('오류: 파일을 읽거나 분석하는 데 실패했습니다. 올바른 JSON 파일인지 확인하십시오.');
-            console.error('Import Error:', error);
+            alert("파일 불러오기 실패: 유효한 JSON 파일이 아니거나 형식이 올바르지 않습니다.");
+            console.error("Import failed:", error);
         }
     };
     reader.readAsText(file);
-});
+}
 
 
-/* 기타 편집 도우미 함수 */
-const $ = id => document.getElementById(id);
-const activeFlow = () => flows[currentFlowIdx];
-const flowLen = () => activeFlow().steps.length;
-const activeStepData = () => activeFlow().steps[currentStep];
+/* =========================
+   이하 V8.0 코드는 안정화에 필요한 최소한의 기능이므로 유지합니다.
+========================= */
 
-/* 흐름 제어 */
-$('btnPrev').onclick = () => { if(currentStep>0){ currentStep--; renderAll(); navIframe(); saveState(); } };
-$('btnNext').onclick = () => { if(currentStep<flowLen()-1){ currentStep++; renderAll(); navIframe(); saveState(); } };
+function loadSrcFile(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    setSrc(file.name);
+    $('srcText').value = file.name;
+    $('srcStatus').textContent = `현재: ${file.name}`;
+    renderMainContent();
+    saveState();
+}
 
-/* 렌더링 통합 함수 */
-function updateLiveMode(mode){
-  const iframeActive = mode === 'iframe';
-  const imagesActive = mode === 'images';
-
-  $('iframePane').style.display = iframeActive ? 'block' : 'none';
-  $('imagesPane').style.display = imagesActive ? 'block' : 'none';
-
-  if(iframeActive){
+function navIframe(){
+    if(!$('liveFrame')) return;
     const src = getSrc();
-    $('liveFrame').src = src; 
-    $('srcText').value = src;
-    $('srcStatus').innerText = src ? `현재: ${src}` : '현재: 연결되지 않음';
-    navIframe();
-  } else if (imagesActive) {
-    renderImages();
-  }
-
-  localStorage.setItem(STORAGE.MODE, mode);
+    if(src && $('liveFrame').src.indexOf(src) === -1){
+        $('liveFrame').src = src;
+    }
+    const hash = activeFlow().map[currentStep] || '';
+    if(hash){
+        $('liveFrame').contentWindow.location.hash = hash.startsWith('#') ? hash : `#${hash}`;
+    }
 }
 
-function renderAll(){
-  buildFlowList();
-  renderStructure();
-  renderThumbs();
-  // updateLiveMode는 현재 로컬 상태를 따름
-  updateLiveMode(localStorage.getItem(STORAGE.MODE) || (getSrc()?'iframe':'images')); 
+function initFlows(){
+    const loadedFlows = getFlowsFromLS();
+    if(loadedFlows){
+        flows = loadedFlows;
+    } else {
+        flows = JSON.parse(JSON.stringify(BASE_FLOWS));
+        saveFlowsToLS(flows);
+    }
+    // V5.0: 플로우 순서 로드
+    const order = getLS(STORAGE.ORDER, null);
+    if(order && order.length === flows.length){
+        const orderedFlows = order.map(key => flows.find(f => f.key === key)).filter(f => f);
+        if(orderedFlows.length === flows.length) flows = orderedFlows;
+    }
 }
 
-/* Flow 관리 기능 (V5.0 로직 유지 - DB 연동 추가) */
-async function buildFlowList(){ // async 추가
-  const list=$('flowList'); list.innerHTML='';
-  const currentKey = activeFlow().key;
-
-  flows.forEach((f,i)=>{
-    const el=document.createElement('div');
-    el.className='flow'+(i===currentFlowIdx?' active':''); el.setAttribute('draggable',isAdminMode ? 'true' : 'false'); // V11.0
-    el.dataset.index=i;
-    el.innerHTML=`
-      <strong>${f.title}</strong>
-      <div class="meta">${f.steps.length} steps</div>
-      ${isAdminMode ? `<div class="reord">REORDER</div>` : ''}
-    `;
-    el.onclick=()=>{ currentFlowIdx=i; currentStep=0; renderAll(); saveState(); };
-
-    // 드래그앤드롭 이벤트 리스너 (순서 변경)
-    el.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', i); el.classList.add('dragging'); });
-    el.addEventListener('dragend', e=>{ el.classList.remove('dragging'); });
-    el.addEventListener('dragover', e=>{ e.preventDefault(); el.classList.add('drag-over'); });
-    el.addEventListener('dragleave', e=>{ el.classList.remove('drag-over'); });
-    el.addEventListener('drop', async e=>{ // async 추가
-      if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-      e.preventDefault(); el.classList.remove('drag-over');
-      const from=parseInt(e.dataTransfer.getData('text/plain'),10), to=i;
-      if(from===to) return;
-      const [movedItem]=flows.splice(from,1); flows.splice(to,0,movedItem);
-      currentFlowIdx=to; 
-
-      await saveFlowsToDB(flows); // ✨ DB에 저장
-      setLS(STORAGE.ORDER, flows.map(f=>f.key)); // 로컬 순서도 업데이트
-      renderAll(); saveState();
-    });
-    list.appendChild(el);
-  });
+// V5.0: 플로우 순서 저장
+function saveFlowOrder(){
+    const order = flows.map(f => f.key);
+    setLS(STORAGE.ORDER, order);
 }
 
-$('btnAddFlow').addEventListener('click', async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const title = prompt('새 플로우 제목을 입력하세요:'); if(!title) return;
-  const newFlow = { key: uuid(), title: title, map: ['step1'], steps:[{title:'Step 1', body:'새로 추가된 첫 번째 단계입니다.', slots:activeStepData().slots}] };
-  flows.push(newFlow); currentFlowIdx=flows.length-1; currentStep=0;
+// V5.0: 플로우 드래그앤드롭
+function initFlowDragDrop(){
+    const list = $('flowList');
+    let dragSrcEl = null;
 
-  await saveFlowsToDB(flows); // ✨ DB에 저장
-  setLS(STORAGE.ORDER, flows.map(f=>f.key));
-  renderAll(); saveState();
-});
-$('btnRenameFlow').addEventListener('click', async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const f = activeFlow();
-  const newTitle = prompt('플로우 이름 변경:', f.title); if(!newTitle) return;
-  f.title = newTitle;
+    function handleDragStart(e){
+        if(!isAdminMode) return;
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.key);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    function handleDragEnter(e){ this.classList.add('drag-over'); }
+    function handleDragLeave(e){ this.classList.remove('drag-over'); }
 
-  await saveFlowsToDB(flows); // ✨ DB에 저장
-  renderAll(); saveState();
-});
-$('btnDeleteFlow').addEventListener('click', async ()=>{ // async 추가
-  if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-  const f = activeFlow();
-  if(flows.length<=1){ alert('최소 1개의 플로우가 필요합니다.'); return; }
-  if(!confirm(`플로우 "${f.title}"와 모든 단계/이미지 매핑 정보를 삭제할까요?`)) return;
+    function handleDrop(e){
+        e.stopPropagation();
+        if(!isAdminMode) return false;
+        if(dragSrcEl !== this){
+            const dragKey = dragSrcEl.dataset.key;
+            const dropKey = this.dataset.key;
 
-  // 이미지/핀 데이터도 삭제 (로컬/DB)
-  const imgs = getLS(STORAGE.IMGS, {}); delete imgs[f.key]; setLS(STORAGE.IMGS, imgs); await setImagesToDB(imgs);
-  const pins = getLS(STORAGE.PINS, {}); delete pins[f.key]; setLS(STORAGE.PINS, pins); await setPinsToDB(pins);
-  const spins = getLS(STORAGE.SPINS, {}); delete spins[f.key]; setLS(STORAGE.SPINS, spins); await setStructPinsToDB(spins);
+            const dragIdx = flows.findIndex(f => f.key === dragKey);
+            const dropIdx = flows.findIndex(f => f.key === dropKey);
 
-  flows.splice(currentFlowIdx, 1);
-  if(currentFlowIdx>=flows.length) currentFlowIdx=flows.length-1;
-  currentStep=0;
+            if(dragIdx > -1 && dropIdx > -1){
+                const [movedFlow] = flows.splice(dragIdx, 1);
+                flows.splice(dropIdx, 0, movedFlow);
+                
+                // 순서 변경 후, 드롭된 플로우가 현재 플로우였으면 인덱스 업데이트
+                if(currentFlowIdx === dragIdx) currentFlowIdx = dropIdx;
+                else if(currentFlowIdx === dropIdx) currentFlowIdx = dragIdx;
+                
+                saveFlowsToLS(flows);
+                saveFlowOrder();
+                renderAll();
+                saveState();
+            }
+        }
+        return false;
+    }
 
-  await saveFlowsToDB(flows); // ✨ DB에 저장
-  setLS(STORAGE.ORDER, flows.map(f=>f.key));
-  renderAll(); navIframe(); saveState();
-});
+    function handleDragEnd(e){
+        this.classList.remove('dragging');
+        document.querySelectorAll('.flow').forEach(f => f.classList.remove('drag-over'));
+    }
 
-// V6.0: 단계 복제 기능 추가 (DB 연동)
-function cloneStep(){
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-    const f = activeFlow();
-    const s = f.steps[currentStep];
-
-    // 새로운 단계 생성: 현재 단계의 데이터를 깊은 복사
-    const newStep = JSON.parse(JSON.stringify(s));
-    newStep.title = `Copy of ${s.title}`;
-
-    // 새로운 맵 키 생성
-    const newMapKey = s.map.split('_')[0] + uuid().slice(0, 4);
-
-    // 현재 단계 다음 위치에 삽입
-    f.steps.splice(currentStep + 1, 0, newStep);
-    f.map.splice(currentStep + 1, 0, newMapKey);
-
-    // 새 단계로 이동
-    currentStep++;
-
-    // 이미지 매핑 및 핀 정보 처리
-    // 복제된 단계는 이미지 매핑과 핀 정보를 가지지 않음
-
-    saveFlowsToDB(flows).then(() => { // DB에 저장
-        renderAll(); 
-        navIframe(); 
-        saveState();
+    document.querySelectorAll('.flow').forEach(flowEl => {
+        flowEl.addEventListener('dragstart', handleDragStart);
+        flowEl.addEventListener('dragenter', handleDragEnter);
+        flowEl.addEventListener('dragover', handleDragOver);
+        flowEl.addEventListener('dragleave', handleDragLeave);
+        flowEl.addEventListener('drop', handleDrop);
+        flowEl.addEventListener('dragend', handleDragEnd);
     });
 }
 
-// V7.0: 단계 추가/삭제/이름 변경 로직 (DB 연동)
-async function addNewStep(){ // async 추가
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
-    const f = activeFlow();
-    const nextStepTitle = prompt('새 단계의 이름을 입력하세요:') || 'New Step';
-    const newMapKey = nextStepTitle.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 10) + uuid().slice(0, 4);
-
-    const newStep = {
-        title: nextStepTitle,
-        body: '새로 추가된 단계입니다.',
-        // 현재 단계의 슬롯을 복사 (깊은 복사)
-        slots: activeStepData().slots ? JSON.parse(JSON.stringify(activeStepData().slots)) : [
-            {key:'core', name:'핵심 요소', content:'핵심 요소'},
-            {key:'link', name:'연결', content:'다음 화면으로 넘어가는 트리거'},
-            {key:'metric', name:'메트릭', content:'전환/이탈 포인트, GA 이벤트'}
-        ]
+// V5.0: 플로우 관리
+function addFlow(){
+    const title = prompt("새 플로우 이름:", "New Flow")?.trim();
+    if(!title) return;
+    
+    const newFlow = {
+        key: uuid(),
+        title: title,
+        map: ['step1'],
+        steps: [{title:'Step 1', body:'설명', slots:[{key:'core', name:'핵심', content:'내용'}]}]
     };
-
-    f.steps.splice(currentStep+1, 0, newStep);
-    f.map.splice(currentStep+1, 0, newMapKey);
-    currentStep++;
-
-    await saveFlowsToDB(flows); // ✨ DB에 저장
-    renderAll(); navIframe(); saveState();
+    flows.push(newFlow);
+    saveFlowsToLS(flows);
+    saveFlowOrder();
+    currentFlowIdx = flows.length - 1;
+    currentStep = 0;
+    renderAll();
+    saveState();
 }
 
-// V7.0: 삭제 시 핀/이미지/구조체 핀 인덱스 조정 헬퍼
-function shiftAfterDelete(flowKey, delIdx){
-    const shiftData = (data, storageKey, stepMapKey) => {
-        const flowData = data[flowKey];
-        if (!flowData) return;
+function renameFlow(){
+    const f = activeFlow();
+    const next = prompt("플로우 이름 변경:", f.title)?.trim();
+    if(!next || next === f.title) return;
+    f.title = next;
+    saveFlowsToLS(flows);
+    renderAll();
+}
 
-        // 1. 이미지 매핑 (stepMapKey는 'stepMap' 혹은 'pins')
-        const originalMap = flowData[stepMapKey] || {};
-        const newMap = {};
+function deleteFlow(){
+    if(flows.length <= 1){ alert('최소 1개의 플로우는 있어야 합니다.'); return; }
+    const f = activeFlow();
+    if(!confirm(`플로우 "${f.title}"와 모든 데이터를 정말 삭제할까요?`)) return;
+    
+    // 이미지/핀 데이터도 삭제 (선택적)
+    const images = getImages();
+    delete images[f.key];
+    setImages(images);
+    
+    const pins = getLS(STORAGE.PINS, {});
+    delete pins[f.key];
+    setLS(STORAGE.PINS, pins);
+    
+    const structPins = getLS(STORAGE.SPINS, {});
+    delete structPins[f.key];
+    setLS(STORAGE.SPINS, structPins);
+    
+    flows.splice(currentFlowIdx, 1);
+    if(currentFlowIdx >= flows.length) currentFlowIdx = flows.length - 1;
+    currentStep = 0;
+    
+    saveFlowsToLS(flows);
+    saveFlowOrder();
+    renderAll();
+    navIframe();
+    saveState();
+}
 
-        Object.keys(originalMap).forEach(key => {
-            const idx = parseInt(key, 10);
-            if (idx < delIdx) {
-                newMap[idx] = originalMap[key];
-            } else if (idx > delIdx) {
-                newMap[idx - 1] = originalMap[key];
+// V5.0: 썸네일 드래그앤드롭
+function initThumbDragDrop(){
+    const list = $('imgList');
+    let dragSrcEl = null;
+
+    function handleDragStart(e){
+        if(!isAdminMode) return;
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.idx);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    function handleDragEnter(e){ this.classList.add('drag-over'); }
+    function handleDragLeave(e){ this.classList.remove('drag-over'); }
+
+    function handleDrop(e){
+        e.stopPropagation();
+        if(!isAdminMode) return false;
+        if(dragSrcEl !== this){
+            const dragIdx = parseInt(dragSrcEl.dataset.idx);
+            const dropIdx = parseInt(this.dataset.idx);
+
+            const f = activeFlow();
+            const images = getImages();
+            const flowImages = images[f.key];
+            
+            // 이미지 배열에서 swap
+            const dragImg = flowImages[dragIdx];
+            const dropImg = flowImages[dropIdx];
+
+            flowImages[dropIdx] = dragImg;
+            flowImages[dragIdx] = dropImg;
+            
+            // Step 구조에서도 swap (Title, Body, Slots, Map)
+            const [movedStep] = f.steps.splice(dragIdx, 1);
+            f.steps.splice(dropIdx, 0, movedStep);
+            
+            const [movedMap] = f.map.splice(dragIdx, 1);
+            f.map.splice(dropIdx, 0, movedMap);
+            
+            // 핀 데이터도 swap (필요하다면)
+            const pins = getLS(STORAGE.PINS, {});
+            const flowPins = pins[f.key] || {};
+            const dragPin = flowPins[dragIdx];
+            const dropPin = flowPins[dropIdx];
+            flowPins[dropIdx] = dragPin;
+            flowPins[dragIdx] = dropPin;
+            setLS(STORAGE.PINS, pins);
+            
+            const structPins = getLS(STORAGE.SPINS, {});
+            const flowStructPins = structPins[f.key] || {};
+            const dragSPin = flowStructPins[dragIdx];
+            const dropSPin = flowStructPins[dropIdx];
+            flowStructPins[dropIdx] = dragSPin;
+            flowStructPins[dragIdx] = dropSPin;
+            setLS(STORAGE.SPINS, structPins);
+
+
+            setImages(images);
+            saveFlowsToLS(flows);
+
+            // 현재 위치 조정
+            if(currentStep === dragIdx) currentStep = dropIdx;
+            else if(currentStep === dropIdx) currentStep = dragIdx;
+
+            renderAll();
+            saveState();
+        }
+        return false;
+    }
+
+    function handleDragEnd(e){
+        this.classList.remove('dragging');
+        document.querySelectorAll('.thumb').forEach(t => t.classList.remove('drag-over'));
+    }
+
+    document.querySelectorAll('.thumb').forEach(thumbEl => {
+        thumbEl.addEventListener('dragstart', handleDragStart);
+        thumbEl.addEventListener('dragenter', handleDragEnter);
+        thumbEl.addEventListener('dragover', handleDragOver);
+        thumbEl.addEventListener('dragleave', handleDragLeave);
+        thumbEl.addEventListener('drop', handleDrop);
+        thumbEl.addEventListener('dragend', handleDragEnd);
+    });
+}
+
+// V5.0: 이미지 업로드
+function uploadImages(e){
+    const files = Array.from(e.target.files);
+    if(files.length === 0) return;
+    
+    // 현재 플로우의 단계 수에 맞춰 배열 생성/초기화
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    const images = getImages();
+    const flowKey = f.key;
+    
+    // 현재 단계부터 할당하도록 할지, 아니면 0단계부터 할당할지 결정
+    const startStep = currentStep;
+    let fileIdx = 0;
+    
+    // 파일 로딩
+    const base64Promises = files.map(file => fileToBase64(file));
+    
+    Promise.all(base64Promises).then(base64s => {
+        if(!images[flowKey]) images[flowKey] = {};
+
+        base64s.forEach((base64, fileIdx) => {
+            const step = startStep + fileIdx;
+            if(step < stepCount){
+                images[flowKey][step] = base64;
             }
         });
-        flowData[stepMapKey] = newMap;
-    };
 
-    const updateDB = (storageKey) => {
-        if (storageKey === STORAGE.IMGS) return setImagesToDB(getLS(storageKey, {}));
-        if (storageKey === STORAGE.PINS) return setPinsToDB(getLS(storageKey, {}));
-        if (storageKey === STORAGE.SPINS) return setStructPinsToDB(getLS(storageKey, {}));
-        return Promise.resolve();
-    };
-
-    // 이미지 매핑 조정 (로컬 캐시)
-    const imgs = getLS(STORAGE.IMGS, {}); shiftData(imgs, STORAGE.IMGS, 'stepMap'); setLS(STORAGE.IMGS, imgs); updateDB(STORAGE.IMGS);
-
-    // 이미지 핀 조정 (로컬 캐시)
-    const pins = getLS(STORAGE.PINS, {}); shiftData(pins, STORAGE.PINS, 'pins'); setLS(STORAGE.PINS, pins); updateDB(STORAGE.PINS);
-
-    // 구조체 핀 조정 (로컬 캐시)
-    const spins = getLS(STORAGE.SPINS, {}); shiftData(spins, STORAGE.SPINS, delIdx); setLS(STORAGE.SPINS, spins); updateDB(STORAGE.SPINS);
+        setImages(images);
+        
+        // 현재 단계로 이동 및 렌더링
+        if(base64s.length > 0) {
+            currentStep = startStep;
+            setMode('images');
+        }
+        renderAll();
+        saveState();
+        alert(`이미지 ${base64s.length}개가 현재 플로우에 성공적으로 업로드되었습니다.`);
+    }).catch(error => {
+        alert("이미지 업로드 중 오류가 발생했습니다.");
+        console.error("Image upload error:", error);
+    });
 }
 
+function assignFromCurrent(){
+    const files = Array.from($('imgFiles').files);
+    if(files.length === 0) {
+        alert("먼저 '이미지 선택' 버튼을 눌러 파일을 선택해야 합니다.");
+        return;
+    }
+    
+    const f = activeFlow();
+    const stepCount = f.steps.length;
+    
+    const base64Promises = files.map(file => fileToBase64(file));
+    
+    Promise.all(base64Promises).then(base64s => {
+        const images = getImages();
+        const flowKey = f.key;
+        if(!images[flowKey]) images[flowKey] = {};
+        
+        // 현재 단계부터 재할당
+        const startStep = currentStep;
+        
+        base64s.forEach((base64, fileIdx) => {
+            const step = startStep + fileIdx;
+            if(step < stepCount){
+                images[flowKey][step] = base64;
+            }
+        });
+        
+        setImages(images);
+        renderAll();
+        saveState();
+        alert(`이미지 ${base64s.length}개가 현재 단계부터 재할당되었습니다.`);
+    });
+}
+
+function clearImageMap(){
+    if(!confirm("현재 플로우의 모든 단계별 이미지를 정말 삭제할까요?")) return;
+    const images = getImages();
+    delete images[activeFlow().key];
+    setImages(images);
+    
+    // 핀 데이터도 삭제
+    const pins = getLS(STORAGE.PINS, {});
+    delete pins[activeFlow().key];
+    setLS(STORAGE.PINS, pins);
+    
+    renderAll();
+    saveState();
+    alert("현재 플로우의 이미지 및 핀 데이터가 모두 삭제되었습니다.");
+}
+
+function deleteImage(stepIdx){
+    const f = activeFlow();
+    if(!confirm(`단계 "${f.steps[stepIdx].title}"의 이미지를 삭제할까요?`)) return;
+
+    const images = getImages();
+    if(images[f.key]) {
+        delete images[f.key][stepIdx];
+        setImages(images);
+    }
+    
+    // 핀 데이터 삭제
+    const pins = getLS(STORAGE.PINS, {});
+    if(pins[f.key]) {
+        delete pins[f.key][stepIdx];
+        setLS(STORAGE.PINS, pins);
+    }
+    
+    renderAll();
+    saveState();
+}
+
+// V5.0: 이미지 캡처
+function exportImage(){
+    const target = $('imgBoard').style.display === 'block' ? $('imgBoard') : $('structPanel');
+    if(target.id === 'imgBoard' && $('stepImg').style.display === 'none'){
+        alert("캡처할 이미지가 없습니다.");
+        return;
+    }
+    
+    const filename = `${activeFlow().title}_${activeFlow().steps[currentStep].title}.png`;
+
+    html2canvas(target).then(canvas => {
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 'image/png');
+    });
+}
+
+// V5.0: 핀/주석 기능
+function renderPins(){
+    const pinLayer = $('pinLayer');
+    pinLayer.innerHTML = '';
+    const pins = getPins();
+
+    pins.forEach(p => {
+        const pinEl = document.createElement('div');
+        pinEl.className = 'pin';
+        pinEl.style.left = `${p.x}%`;
+        pinEl.style.top = `${p.y}%`;
+        pinEl.dataset.note = p.note;
+        pinEl.dataset.x = p.x;
+        pinEl.dataset.y = p.y;
+        
+        if(isAdminMode) {
+             pinEl.textContent = 'X';
+             pinEl.onclick = (e) => {
+                 e.stopPropagation();
+                 if(confirm("이 핀을 삭제할까요?")) deletePin(p.x, p.y);
+             };
+        } else {
+            pinEl.textContent = 'i';
+            pinEl.onmouseover = (e) => {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'pinNote';
+                noteEl.textContent = p.note;
+                noteEl.style.left = pinEl.style.left;
+                noteEl.style.top = pinEl.style.top;
+                pinLayer.appendChild(noteEl);
+            };
+            pinEl.onmouseout = () => {
+                pinLayer.querySelectorAll('.pinNote').forEach(el => el.remove());
+            };
+        }
+
+        pinLayer.appendChild(pinEl);
+    });
+}
+
+function handlePinClick(e){
+    if(!isAdminMode || !$('pinMode').checked) return;
+
+    // 이미지 보드 내부 좌표 계산
+    const rect = $('imgBoard').getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    // 노트 입력
+    const note = prompt("핀 설명(주석)을 입력하세요:");
+    if(!note || !note.trim()) return;
+    
+    const pins = getPins();
+    pins.push({x: x.toFixed(2), y: y.toFixed(2), note: note.trim()});
+    setPins(pins);
+    renderPins();
+}
+
+function deletePin(x, y){
+    const pins = getPins().filter(p => p.x !== x || p.y !== y);
+    setPins(pins);
+    renderPins();
+}
+
+function clearPins(){
+    if(confirm("현재 단계의 모든 이미지 핀을 삭제할까요?")) {
+        setPins([]);
+        renderPins();
+    }
+}
+
+// V5.0: Structure 핀/주석 기능
+function renderStructPins(){
+    const pinLayer = $('structPinLayer');
+    pinLayer.innerHTML = '';
+    const pins = structPins();
+
+    pins.forEach(p => {
+        const pinEl = document.createElement('div');
+        pinEl.className = 'pin';
+        pinEl.style.left = `${p.x}%`;
+        pinEl.style.top = `${p.y}%`;
+        pinEl.dataset.note = p.note;
+        pinEl.dataset.x = p.x;
+        pinEl.dataset.y = p.y;
+        
+        if(isAdminMode) {
+             pinEl.textContent = 'X';
+             pinEl.onclick = (e) => {
+                 e.stopPropagation();
+                 if(confirm("이 핀을 삭제할까요?")) deleteStructPin(p.x, p.y);
+             };
+        } else {
+            pinEl.textContent = 'i';
+            pinEl.onmouseover = (e) => {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'pinNote';
+                noteEl.textContent = p.note;
+                noteEl.style.left = pinEl.style.left;
+                noteEl.style.top = pinEl.style.top;
+                pinLayer.appendChild(noteEl);
+            };
+            pinEl.onmouseout = () => {
+                pinLayer.querySelectorAll('.pinNote').forEach(el => el.remove());
+            };
+        }
+
+        pinLayer.appendChild(pinEl);
+    });
+}
+
+function handleStructPinClick(e){
+    if(!isAdminMode || !$('structPinMode').checked) return;
+    
+    // structBody 내에서만 클릭 허용
+    if(e.target.closest('#structPanel') !== $('structPanel') && e.target.id !== 'structPanel') return;
+
+    // 좌표 계산
+    const rect = $('structPanel').getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    // 노트 입력
+    const note = prompt("핀 설명(주석)을 입력하세요:");
+    if(!note || !note.trim()) return;
+    
+    const pins = structPins();
+    pins.push({x: x.toFixed(2), y: y.toFixed(2), note: note.trim()});
+    setStructPins(pins);
+    renderStructPins();
+}
+
+function deleteStructPin(x, y){
+    const pins = structPins().filter(p => p.x !== x || p.y !== y);
+    setStructPins(pins);
+    renderStructPins();
+}
+
+function clearStructPins(){
+    if(confirm("현재 단계의 모든 구조 핀을 삭제할까요?")) {
+        setStructPins([]);
+        renderStructPins();
+    }
+}
+
+// V5.0: Structure 콘텐츠 편집/저장
+function updateTitle(e){
+    const f = activeFlow();
+    f.steps[currentStep].title = e.target.textContent;
+    saveFlowsToLS(flows);
+    renderAll();
+    saveState();
+}
+
+function updateDescription(e){
+    const f = activeFlow();
+    f.steps[currentStep].body = e.target.textContent;
+    saveFlowsToLS(flows);
+    saveState();
+}
+
+function updateSlotContent(e, slotIdx){
+    const f = activeFlow();
+    f.steps[currentStep].slots[slotIdx].content = e.target.textContent;
+    saveFlowsToLS(flows);
+    saveState();
+}
+
+// V5.0: 슬롯 관리
+function addSlot(){
+    const slotType = document.querySelector('input[name="slotType"]:checked').value;
+    let name = '';
+    
+    if(slotType === 'core') name = '핵심 요소';
+    else if(slotType === 'link') name = '연결';
+    else if(slotType === 'metric') name = '메트릭';
+    
+    const f = activeFlow();
+    f.steps[currentStep].slots.push({key:slotType, name:name, content:'내용을 입력해주세요'});
+    saveFlowsToLS(flows);
+    renderStructure();
+    saveState();
+}
+
+function deleteSlot(){
+    const f = activeFlow();
+    const slots = f.steps[currentStep].slots;
+    if(slots.length === 0){ alert('삭제할 슬롯이 없습니다.'); return; }
+    
+    const slotNames = slots.map((s, i) => `${i+1}. ${s.name}: ${s.content.substring(0, 10)}...`);
+    const selection = prompt(`삭제할 슬롯의 번호를 입력해주세요:\n${slotNames.join('\n')}`);
+    
+    const idx = parseInt(selection) - 1;
+    if(isNaN(idx) || idx < 0 || idx >= slots.length){
+        if(selection) alert("잘못된 번호입니다.");
+        return;
+    }
+    
+    if(!confirm(`"${slots[idx].name}" 슬롯을 정말 삭제할까요?`)) return;
+    
+    slots.splice(idx, 1);
+    saveFlowsToLS(flows);
+    renderStructure();
+    saveState();
+}
+
+// V5.0: 슬롯 드래그앤드롭
+function initSlotDragDrop(){
+    const list = $('slotGrid');
+    let dragSrcEl = null;
+
+    function handleDragStart(e){
+        if(!isAdminMode) return;
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.idx);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    function handleDragEnter(e){ this.classList.add('drag-over'); }
+    function handleDragLeave(e){ this.classList.remove('drag-over'); }
+
+    function handleDrop(e){
+        e.stopPropagation();
+        if(!isAdminMode) return false;
+        if(dragSrcEl !== this){
+            const dragIdx = parseInt(dragSrcEl.dataset.idx);
+            const dropIdx = parseInt(this.dataset.idx);
+
+            const f = activeFlow();
+            const slots = f.steps[currentStep].slots;
+
+            if(dragIdx > -1 && dropIdx > -1){
+                const [movedSlot] = slots.splice(dragIdx, 1);
+                slots.splice(dropIdx, 0, movedSlot);
+                
+                saveFlowsToLS(flows);
+                renderStructure();
+                saveState();
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnd(e){
+        this.classList.remove('dragging');
+        document.querySelectorAll('#slotGrid .card').forEach(c => c.classList.remove('drag-over'));
+    }
+
+    document.querySelectorAll('#slotGrid .card').forEach(cardEl => {
+        cardEl.addEventListener('dragstart', handleDragStart);
+        cardEl.addEventListener('dragenter', handleDragEnter);
+        cardEl.addEventListener('dragover', handleDragOver);
+        cardEl.addEventListener('dragleave', handleDragLeave);
+        cardEl.addEventListener('drop', handleDrop);
+        cardEl.addEventListener('dragend', handleDragEnd);
+    });
+}
+
+// V5.0: 단계 관리
+function addNewStep(){
+    const f = activeFlow();
+    const next = prompt("새 단계 이름:", `Step ${f.steps.length + 1}`)?.trim();
+    if(!next) return;
+    
+    const newStep = {title:next, body:'새 단계 설명', slots:[{key:'core', name:'핵심', content:'내용'}]};
+    
+    f.steps.splice(currentStep + 1, 0, newStep);
+    f.map.splice(currentStep + 1, 0, `step${f.steps.length}`);
+    
+    currentStep++;
+    saveFlowsToLS(flows);
+    renderAll();
+    navIframe();
+    saveState();
+}
+
+function cloneStep(){
+    const f = activeFlow();
+    const s = f.steps[currentStep];
+    
+    // 깊은 복사
+    const newStep = JSON.parse(JSON.stringify(s)); 
+    newStep.title = `${s.title} (복제)`;
+
+    f.steps.splice(currentStep + 1, 0, newStep);
+    f.map.splice(currentStep + 1, 0, `step${f.steps.length}`);
+    
+    currentStep++;
+    saveFlowsToLS(flows);
+    renderAll();
+    navIframe();
+    saveState();
+}
 
 function renameStep(){
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
     const f = activeFlow();
     const s = f.steps[currentStep];
     const next = (prompt('단계 이름 변경:', s.title)||'').trim();
     if(!next) return;
     s.title = next;
-    saveFlowsToDB(flows).then(() => { // DB에 저장
-        renderAll(); 
-        saveState();
-    });
+    saveFlowsToLS(flows);
+    renderAll(); saveState();
+}
+
+function shiftAfterDelete(flowKey, delIdx){
+    // 이미지, 핀, 구조 핀 데이터를 한 칸씩 당깁니다.
+    const images = getImages();
+    const pins = getLS(STORAGE.PINS, {});
+    const structPins = getLS(STORAGE.SPINS, {});
+    
+    if(images[flowKey]){
+        for(let i=delIdx; i<Object.keys(images[flowKey]).length; i++){
+            images[flowKey][i] = images[flowKey][i+1];
+        }
+        delete images[flowKey][Object.keys(images[flowKey]).length - 1];
+        setImages(images);
+    }
+    
+    if(pins[flowKey]){
+        for(let i=delIdx; i<Object.keys(pins[flowKey]).length; i++){
+            pins[flowKey][i] = pins[flowKey][i+1];
+        }
+        delete pins[flowKey][Object.keys(pins[flowKey]).length - 1];
+        setLS(STORAGE.PINS, pins);
+    }
+
+    if(structPins[flowKey]){
+        for(let i=delIdx; i<Object.keys(structPins[flowKey]).length; i++){
+            structPins[flowKey][i] = structPins[flowKey][i+1];
+        }
+        delete structPins[flowKey][Object.keys(structPins[flowKey]).length - 1];
+        setLS(STORAGE.SPINS, structPins);
+    }
 }
 
 function deleteStep(){
-    if (!isAdminMode) return; // V11.0: 관리자 모드 아닐 시 편집 불가
     const f = activeFlow();
     if(f.steps.length<=1){ alert('최소 1단계는 필요합니다.'); return; }
     if(!confirm(`현재 단계 "${f.steps[currentStep].title}" 를 삭제할까요?`)) return;
-
+    
     const delIdx = currentStep;
-    shiftAfterDelete(f.key, delIdx); // 이미지/핀 인덱스 조정
-
+    shiftAfterDelete(f.key, delIdx);
+    
     f.steps.splice(delIdx,1);
     f.map.splice(delIdx,1);
-
+    
     if(currentStep>=f.steps.length) currentStep=f.steps.length-1;
-
-    saveFlowsToDB(flows).then(() => { // DB에 저장
-        renderAll(); 
-        navIframe(); 
-        saveState();
-    });
+    
+    saveFlowsToLS(flows);
+    renderAll(); navIframe(); saveState();
 }
 
-// V5.0: Structure 툴바에 단계 관리 버튼 연결
+
 $('btnStepAdd').addEventListener('click', addNewStep);
 $('btnStepClone').addEventListener('click', cloneStep); 
 $('btnStepRename').addEventListener('click', renameStep);
 $('btnStepDelete').addEventListener('click', deleteStep);
-
-
-/* 초기 시작 */
-(async function init(){
-  checkAdminMode(); // V11.0: 관리자 모드 확인 및 설정
-  await initFlows(); // Firebase 데이터 로드가 완료될 때까지 대기
-  loadState(); // 로컬 상태 복원
-
-  const src = getSrc(); 
-  // V5.5: 초기 로드 시 Iframe 소스가 있으면 'iframe' 모드로 시작, 아니면 'images' 모드로 시작
-  const mode = localStorage.getItem(STORAGE.MODE) || (src ? 'iframe' : 'images');
-
-  // V11.0: isAdminMode가 비활성화되면 모든 편집 버튼을 숨겨야 하므로, 
-  // 이전에 initFlows에서 checkAdminMode()가 호출되었으므로 renderAll()이 최종 UI를 결정합니다.
-
-  renderAll(); 
-  navIframe();
-})();
 
 </script>
 </body>
