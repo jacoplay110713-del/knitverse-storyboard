@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Knitverse · Hybrid Storyboard v8.0 (LZ-String Compression)</title>
+<title>Knitverse · Hybrid Storyboard v10.0 (Firebase/Firestore)</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script> 
 <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
+
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Noto+Sans+KR:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{ --bg:#0b0c10; --panel:#10151b; --card:#141c26; --text:#eaf2ff; --muted:#a9b7c6; --blue:#35d0ff; --gold:#ffd54f; --line:#223244; }
@@ -106,7 +109,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">KNITVERSE · Hybrid Storyboard V8.0</div>
+  <div class="brand">KNITVERSE · Hybrid Storyboard V10.0</div>
 </header>
 <div class="wrap" id="mainWrapper">
   <aside>
@@ -222,6 +225,26 @@
     </div>
 </div>
 
+<script>
+    // 1. Firebase 설정 정보 (사용자님의 고유 키가 포함됨)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBcPS6qESHwa9Y9RMKfocKesffILk_FIT8",
+        authDomain: "knitverse-storyboard-project.firebaseapp.com",
+        projectId: "knitverse-storyboard-project",
+        storageBucket: "knitverse-storyboard-project.firebasestorage.app",
+        messagingSenderId: "411428209337",
+        appId: "1:411428209337:web:1c6c0df694bf12c4851168",
+        measurementId: "G-B66MGKHE8S"
+    };
+
+    // 2. Firebase 앱 초기화 및 Firestore 인스턴스 생성
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Firestore에 저장할 문서 ID (모든 스토리보드 데이터는 이 하나의 문서에 저장됨)
+    const STORYBOARD_DOC_ID = 'knitverse-main-data';
+</script>
+
 
 <script>
 /* =========================
@@ -237,9 +260,9 @@ const BASE_FLOWS=[
    {title:'완료',body:'주문 완료', slots:[{key:'core', name:'완료 핵심', content:'완료 핵심'},{key:'link', name:'마이페이지로 이동', content:'마이페이지로 이동'},{key:'metric', name:'재방문 유도', content:'재방문 유도'}]}
   ]},
  {key:'rookie',  title:'루키 · 성장 플로우', map:['home','apply','klgc','upload','publish'], steps:[{title:'HOME',body:'APPLY 클릭'},{title:'Apply Form',body:'아티스트 지원 폼'},{title:'K-LGC',body:'4주 커리큘럼 단계'},{title:'Upload',body:'상품 업로드'},{title:'Publish',body:'상품 공개 완료'}]},
- {key:'learner', title:'학습자 · 클래스 플로우', map:['home','classes','detail','enroll','play'], steps:[{title:'HOME',body:'클래스 탭 클릭'},{title:'Class List',body:'강의 목록'},{title:'Detail',body:'강의 상세 설명'},{title:'Enroll',body:'수강 등록'},{title:'Player',body:'강의 재생'}]},
+ {key:'learner', title:'학습자 · 클래스 플로우', map:['home','classes','detail','enroll','play'], steps:[{title:'HOME',body:'클래스 탭 클릭'},{title:'Class List',body:'강의 목록'},{title:'Detail',body:'강의 상세 설명'},{key:'enroll', name:'수강 등록', content:'수강 등록'},{key:'player', name:'강의 재생', content:'강의 재생'}]},
  {key:'creator', title:'액티브/마스터 작가 플로우', map:['home','classes','create','sell','legacy'], steps:[{title:'HOME',body:'MY PAGE에서 크리에이터 허브 진입'},{title:'클래스 개설',body:'커리큘럼/가격/언어 설정'},{title:'상품화',body:'키트/도안 번들 구성 · 재고'},{title:'판매/프로모션',body:'런칭 · 팬/커뮤니티 프로모션'},{title:'레거시 축적',body:'멘토링/평가 · 레거시 스코어 상승'}]},
- {key:'support', title:'서포터즈 플로우', map:['home','community','apply','board','credit'], steps:[{title:'HOME',body:'COMMUNITY 진입'},{title:'Supporter Hub',body:'역할 선택/가용성 설정'},{title:'Apply',body:'프로필 제출'},{title:'Matching Board',body:'프로젝트 매칭/승인'},{title:'크레딧 & 보상',body:'K-Points 적립/정산'}]}
+ {key:'support', title:'서포터즈 플로우', map:['home','community','apply','board','credit'], steps:[{title:'HOME',body:'COMMUNITY 진입'},{title:'Supporter Hub',body:'역할 선택/가용성 설정'},{title:'Apply',body:'프로필 제출'},{title:'Matching Board',body:'프로젝트 매칭/승인'},{title:'크레딧 & 보상',content:'K-Points 적립/정산'}]}
 ];
 /* =========================
    상태 & 저장 키 + 헬퍼 (V5.0 키 유지)
@@ -256,53 +279,101 @@ const STORAGE = {
   PINS:  'kv_v50_pins',
   SPINS: 'kv_v50_struct_pins', 
   FLOWS: 'kv_v50_flows',   
-  STATE: 'kv_v50_state',
+  STATE: 'kv_v50_state', // (로컬 저장소 유지)
   // V6.1: 모든 저장 키 리스트 (Export 용도)
   ALL_KEYS: ['kv_v50_flow_order', 'kv_v50_src', 'kv_v50_mode', 'kv_v50_images', 'kv_v50_pins', 'kv_v50_struct_pins', 'kv_v50_flows', 'kv_v50_state']
 };
 
-// ✨ V8.0: Base64 <-> Blob URL 변환 시 캐싱을 위한 전역 맵
+// V8.0: Base64 <-> Blob URL 변환 시 캐싱을 위한 전역 맵
 const BLOB_URL_CACHE = {}; 
 const LZ = window.LZString;
 
-function getLS(key, def){ try{ return JSON.parse(localStorage.getItem(key) || JSON.stringify(def)); } catch(e){ return def; } }
-function setLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-function $(id){ return document.getElementById(id); }
-function uuid(){ return Math.random().toString(36).slice(2,10); }
-function activeFlow(){ return flows[currentFlowIdx]; }
-function flowLen(){ return activeFlow().steps.length; }
-function activeStepData(){ return activeFlow().steps[currentStep]; }
-
-function saveFlowsToLS(flowsArr){ localStorage.setItem(STORAGE.FLOWS, JSON.stringify(flowsArr)); }
-function loadFlowsFromLS(){ try{ return JSON.parse(localStorage.getItem(STORAGE.FLOWS) || 'null'); }catch(e){ return null; } }
+// V10.0: LocalStorage 대신 Firestore를 사용하도록 모든 저장/불러오기 함수 교체
 
 /* =========================
-   Base64 <-> Blob/URL + LZ-String 헬퍼 (V8.0: 압축/복원 기능 통합)
+   V10.0: Firebase 데이터 저장/불러오기 헬퍼 (LocalStorage 대체)
 ========================= */
 
-// ✨ V8.0: 압축 헬퍼
-function compressData(base64) {
-    if (!base64 || !base64.startsWith('data:')) return base64;
+// Firestore에서 데이터 불러오기 (비동기 처리 필요)
+async function getDB(key) {
     try {
-        // Base64 문자열 전체를 압축
-        return 'LZ+' + LZ.compressToUTF16(base64); 
-    } catch(e) {
-        console.error("Compression failed:", e);
-        return base64; // 압축 실패 시 원본 반환
+        const doc = await db.collection("storyboard").doc(STORYBOARD_DOC_ID).get();
+        if (doc.exists) {
+            const data = doc.data();
+            // 특정 키(FLOWS, IMGS 등)에 해당하는 값만 반환
+            return data[key] || null; 
+        }
+        return null;
+    } catch (e) {
+        console.error("Firebase read error:", e);
+        return null;
     }
 }
 
-// ✨ V8.0: 압축 해제 헬퍼
+// Firestore에 데이터 저장하기 (비동기 처리 필요)
+async function setDB(key, val) {
+    try {
+        // FLOWS, IMGS 등의 객체/배열 형태로 저장
+        await db.collection("storyboard").doc(STORYBOARD_DOC_ID).set({
+            [key]: val
+        }, { merge: true }); // 기존 데이터는 유지하고 해당 키만 업데이트
+        
+        return true;
+    } catch (e) {
+        console.error("Firebase write error:", e);
+        return false;
+    }
+}
+
+// V10.0: UUID 함수 유지
+function uuid(){ return Math.random().toString(36).slice(2,10); } 
+
+// V10.0: 로컬 상태 저장/복원 함수는 기존 로직을 유지 (STATE만 사용)
+function getLS(key, def){ try{ return JSON.parse(localStorage.getItem(key) || JSON.stringify(def)); } catch(e){ return def; } }
+function setLS(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+// V10.0: DB 저장/로드 함수 재정의 (기존 setLS/getLS 호출 대체)
+async function loadFlowsFromDB(){ return await getDB(STORAGE.FLOWS); }
+async function saveFlowsToDB(flowsArr){ return await setDB(STORAGE.FLOWS, flowsArr); }
+
+async function getImagesFromDB(){ return await getDB(STORAGE.IMGS); }
+async function setImagesToDB(data){ return await setDB(STORAGE.IMGS, data); }
+
+async function getPinsFromDB(){ return await getDB(STORAGE.PINS); }
+async function setPinsToDB(data){ return await setDB(STORAGE.PINS, data); }
+
+async function getStructPinsFromDB(){ return await getDB(STORAGE.SPINS); }
+async function setStructPinsToDB(data){ return await setDB(STORAGE.SPINS, data); }
+
+async function getSrcFromDB(){ return await getDB(STORAGE.SRC); }
+async function setSrcToDB(v){ return await setDB(STORAGE.SRC, v); }
+
+
+/* =========================
+   Base64 <-> Blob/URL + LZ-String 헬퍼 
+========================= */
+
+// V8.0: 압축 헬퍼
+function compressData(base64) {
+    if (!base64 || !base64.startsWith('data:')) return base64;
+    try {
+        return 'LZ+' + LZ.compressToUTF16(base64); 
+    } catch(e) {
+        console.error("Compression failed:", e);
+        return base64;
+    }
+}
+
+// V8.0: 압축 해제 헬퍼
 function decompressData(data) {
     if (!data || !data.startsWith('LZ+')) return data;
     try {
-        // 압축된 문자열만 해제
         const compressed = data.substring(3);
         const decompressed = LZ.decompressFromUTF16(compressed);
-        return decompressed || data; // 해제 실패 시 (null) 원본 데이터(압축된 데이터) 반환하여 재시도 유도
+        return decompressed || data; 
     } catch(e) {
         console.error("Decompression failed:", e);
-        return data; // 해제 실패 시 원본 데이터 반환
+        return data; 
     }
 }
 
@@ -311,7 +382,6 @@ function decompressData(data) {
 function urlToBase64(url) {
     return new Promise((resolve, reject) => {
         if (!url || !url.startsWith('blob:')) {
-            // Blob URL이 아니면 원본 URL 반환 (Iframe URL 등)
             resolve({url: url, base64: url});
             return;
         }
@@ -325,7 +395,6 @@ function urlToBase64(url) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const rawBase64 = reader.result;
-                    // ✨ V8.0: Base64를 LZ-String으로 압축하여 저장
                     const compressedBase64 = compressData(rawBase64); 
                     resolve({url: url, base64: compressedBase64});
                 };
@@ -333,29 +402,24 @@ function urlToBase64(url) {
                 reader.readAsDataURL(blob);
             })
             .catch(error => {
-                // V7.4: 오류 발생 시 해당 URL을 무시하고 실패 정보만 반환
                 console.warn(`[Export Warning] Failed to convert Blob URL to Base64: ${url}`, error);
-                resolve({url: url, base64: url, error: true}); // 오류 플래그와 원본 URL 반환
+                resolve({url: url, base64: url, error: true}); 
             });
     });
 }
 
 // V8.0: Base64 문자열을 Blob URL로 복원 (LZ-String 해제 및 디코딩 안정성 강화)
 function base64ToUrl(compressedBase64) {
-    // 1. Base64가 아니거나 이미 Blob URL이면 바로 반환 (압축/해제 로직은 무시)
     if (!compressedBase64 || !(compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
         return compressedBase64;
     }
 
-    // 2. 캐시 확인
     if (BLOB_URL_CACHE[compressedBase64]) {
         return BLOB_URL_CACHE[compressedBase64];
     }
     
-    // 3. ✨ V8.0: 압축 해제
     const base64 = decompressData(compressedBase64);
 
-    // 해제된 데이터가 Base64 형식이 아니면 (복원 실패 또는 압축되지 않은 데이터)
     if (!base64 || !base64.startsWith('data:')) {
         console.error("Error: Decompressed data is not a valid Base64 string.");
         return ''; 
@@ -381,7 +445,6 @@ function base64ToUrl(compressedBase64) {
         const blob = new Blob([uInt8Array], { type: contentType });
         const url = URL.createObjectURL(blob);
         
-        // 4. 캐시에 저장 후 반환
         BLOB_URL_CACHE[compressedBase64] = url;
         return url;
 
@@ -391,37 +454,35 @@ function base64ToUrl(compressedBase64) {
     }
 }
 
-// ✨ V8.0: 이미지 데이터 로드 시 모든 Base64를 Blob URL로 복원하고 맵핑을 업데이트하는 함수
-function restoreImagesFromLS() {
-    const imgsData = getLS(STORAGE.IMGS, {});
+// V10.0: 초기화 시점에 DB에서 이미지 데이터를 불러와 Blob URL로 변환 (Base64 원본은 DB에 유지)
+async function restoreImagesFromDB() {
+    // V10.0: 이미지 데이터를 DB에서 불러옴
+    const imgsData = await getImagesFromDB() || {}; 
     let hasRestored = false;
-    const urlMap = {}; // 임시 복원 맵 (LZ-String 압축 데이터 기준으로 Blob URL 저장)
+    const urlMap = {}; 
 
     for (const flowKey in imgsData) {
         const flowData = imgsData[flowKey];
         if (flowData) {
-            
-            // 1. Gallery URL 복원
+            // Gallery URL 복원 (Base64 -> Blob URL)
             if (flowData.gallery && Array.isArray(flowData.gallery)) {
                 flowData.gallery = flowData.gallery.map(compressedBase64 => {
                     if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                        // Base64 또는 압축된 Base64 복원
                         if (!urlMap[compressedBase64]) {
                             urlMap[compressedBase64] = base64ToUrl(compressedBase64);
                         }
                         hasRestored = true;
                         return urlMap[compressedBase64];
                     }
-                    return compressedBase64; // Blob URL 또는 일반 URL은 그대로 반환
+                    return compressedBase64;
                 });
             }
             
-            // 2. StepMap URL 복원
+            // StepMap URL 복원 (Base64 -> Blob URL)
             if (flowData.stepMap) {
                 for (const step in flowData.stepMap) {
                     const compressedBase64 = flowData.stepMap[step];
                     if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                        // Gallery 처리 과정에서 이미 Blob URL이 생성되었거나, 새로 복원
                         if (!urlMap[compressedBase64]) {
                             urlMap[compressedBase64] = base64ToUrl(compressedBase64);
                         }
@@ -434,19 +495,24 @@ function restoreImagesFromLS() {
     }
     
     if (hasRestored) {
+        // V10.0: 복원된 Blob URL을 다시 로컬 스토리지에 임시 저장 (휘발성 데이터)
         setLS(STORAGE.IMGS, imgsData);
     }
+
+    return imgsData;
 }
 
 
 /* =========================
-   초기화 (플로우 순서 복원 & 병합)
+   초기화 (플로우 순서 복원 & 병합) - V10.0 Firebase 연동
 ========================= */
-function initFlows(){
-  const saved = loadFlowsFromLS();
+async function initFlows(){ 
+  // 1. FLOWS 데이터를 Firebase에서 불러오기
+  const saved = await loadFlowsFromDB(); 
+
   if(saved && Array.isArray(saved) && saved.length){
     flows = saved;
-    // V5.5: 저장된 플로우 데이터에 슬롯이 없으면 기본 슬롯 추가 (이전 버전 호환성)
+    // V5.5: 저장된 플로우 데이터에 슬롯이 없으면 기본 슬롯 추가 (기존 호환성 로직 유지)
     flows.forEach(f => {
         f.steps.forEach(s => {
             if(!s.slots){
@@ -460,7 +526,7 @@ function initFlows(){
         });
     });
   }else{
-    const order = getLS(STORAGE.ORDER, BASE_FLOWS.map(f=>f.key));
+    // Firebase에 데이터가 없을 경우 기본값으로 초기화
     const processedBaseFlows = BASE_FLOWS.map(f => ({
         ...f,
         steps: f.steps.slice(0, 5),
@@ -468,20 +534,32 @@ function initFlows(){
     }));
 
     const processedByKey = Object.fromEntries(processedBaseFlows.map(f=>[f.key, f]));
+    const order = getLS(STORAGE.ORDER, BASE_FLOWS.map(f=>f.key)); 
     flows = order.map(k => processedByKey[k] || processedBaseFlows.find(f=>f.key === k) || null).filter(Boolean);
     processedBaseFlows.forEach(f=>{ if(!flows.find(x=>x.key===f.key)) flows.push(f); });
     
-    setLS(STORAGE.ORDER, flows.map(f=>f.key));
-    saveFlowsToLS(flows);
+    // 초기 기본값을 Firebase에 저장 (최초 1회 실행)
+    await saveFlowsToDB(flows);
   }
+  
+  // 2. 이미지 데이터 로드 및 복원
+  await restoreImagesFromDB();
+  
+  // 3. SRC, PINS, SPINS 데이터도 DB에서 불러와 로컬 스토리지에 복원
+  const src = await getSrcFromDB();
+  if (src) setLS(STORAGE.SRC, src);
 
-  // ✨ V8.0: 초기화 단계에서 Base64 -> Blob URL 복원 로직 실행 (영속성 핵심)
-  restoreImagesFromLS(); 
+  const pins = await getPinsFromDB();
+  if (pins) setLS(STORAGE.PINS, pins);
+
+  const structPins = await getStructPinsFromDB();
+  if (structPins) setLS(STORAGE.SPINS, structPins);
 }
 
 /* =========================
    세션 상태 저장/복원
 ========================= */
+// V10.0: 현재 인덱스(STATE)만 로컬 스토리지 사용
 function saveState(){
   setLS(STORAGE.STATE, { flowIdx: currentFlowIdx, stepIdx: currentStep });
 }
@@ -495,22 +573,24 @@ function loadState(){
 /* =========================
    Structure: 핀/메모 + 카드 데이터
 ========================= */
-function structPins(flowKey=activeFlow().key, step=currentStep){
-  const o = getLS(STORAGE.SPINS, {});
+// V10.0: 핀 데이터는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
+async function structPins(flowKey=activeFlow().key, step=currentStep){
+  const o = getLS(STORAGE.SPINS, {}); 
+  // V10.0: DB 연동 후 로컬 스토리지에 캐시된 데이터 사용
   if(!o[flowKey]) o[flowKey]={};
   if(!o[flowKey][step]) o[flowKey][step]=[];
-  setLS(STORAGE.SPINS, o); 
   return o[flowKey][step];
 }
-function setStructPins(list, flowKey=activeFlow().key, step=currentStep){
+async function setStructPins(list, flowKey=activeFlow().key, step=currentStep){
   const o = getLS(STORAGE.SPINS, {});
   if(!o[flowKey]) o[flowKey]={};
   o[flowKey][step]=list;
   setLS(STORAGE.SPINS, o); 
+  await setStructPinsToDB(o); // ✨ DB에 영구 저장
   saveState();
 }
 
-// Structure 카드 데이터 렌더링
+// Structure 카드 데이터 렌더링 (로직 유지)
 function renderStructure(){
   const f=activeFlow(), s=activeStepData();
   
@@ -546,33 +626,33 @@ function renderStructure(){
   attachEditListeners();
 }
 
-// 편집 리스너 부착
+// 편집 리스너 부착 (로직 유지)
 function attachEditListeners(){
     const s = activeStepData();
     
     // 1. 단계 제목 편집
-    $('stepTitle').addEventListener('dblclick', (e) => {
+    $('stepTitle').addEventListener('dblclick', async (e) => { // async 추가
         const newTitle = prompt('단계 이름 변경:', s.title);
         if (newTitle !== null && newTitle.trim() !== '') {
             s.title = newTitle.trim();
-            saveFlowsToLS(flows);
+            await saveFlowsToDB(flows); // ✨ DB에 저장
             renderAll();
         }
     });
 
     // 2. 단계 설명 편집
-    $('stepBody').addEventListener('dblclick', (e) => {
+    $('stepBody').addEventListener('dblclick', async (e) => { // async 추가
         const newBody = prompt('단계 설명 변경:', s.body);
         if (newBody !== null) {
             s.body = newBody.trim() || '설명 없음';
-            saveFlowsToLS(flows);
+            await saveFlowsToDB(flows); // ✨ DB에 저장
             renderStructure();
         }
     });
 
     // 3. 슬롯 콘텐츠 편집
     document.querySelectorAll('#structBody .card').forEach(card => {
-        card.addEventListener('dblclick', (e) => {
+        card.addEventListener('dblclick', async (e) => { // async 추가
             if(card.classList.contains('dragging')) return; 
             
             const key = card.dataset.key;
@@ -582,25 +662,25 @@ function attachEditListeners(){
 
             if (newContent !== null) {
                 slot.content = newContent.trim();
-                saveFlowsToLS(flows);
+                await saveFlowsToDB(flows); // ✨ DB에 저장
                 renderStructure();
             }
         });
     });
 
     // 4. 슬롯 추가 버튼
-    $('btnAddSlot').addEventListener('click', () => {
+    $('btnAddSlot').addEventListener('click', async () => { // async 추가
         const name = prompt('새 슬롯의 이름(제목)을 입력하세요:').trim();
         if (!name) return;
         const key = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 10) + uuid().slice(0,4);
         
         s.slots.push({ key: key, name: name, content: '' });
-        saveFlowsToLS(flows);
+        await saveFlowsToDB(flows); // ✨ DB에 저장
         renderStructure();
     });
 
     // 5. 슬롯 삭제 버튼
-    $('btnDeleteSlot').addEventListener('click', () => {
+    $('btnDeleteSlot').addEventListener('click', async () => { // async 추가
         if (!s.slots || s.slots.length === 0) { alert('삭제할 슬롯이 없습니다.'); return; }
         
         const slotNames = s.slots.map((sl, idx) => `${idx + 1}. ${sl.name}`).join('\n');
@@ -610,7 +690,7 @@ function attachEditListeners(){
         if (index >= 0 && index < s.slots.length) {
             if(confirm(`"${s.slots[index].name}" 슬롯을 삭제하시겠습니까?`)){
                 s.slots.splice(index, 1);
-                saveFlowsToLS(flows);
+                await saveFlowsToDB(flows); // ✨ DB에 저장
                 renderStructure();
             }
         } else if(indexStr !== null && indexStr.trim() !== ''){
@@ -619,42 +699,8 @@ function attachEditListeners(){
     });
 
     // 6. 슬롯 드래그앤드롭 (순서 변경)
-    let dragSrcEl = null;
-
-    document.querySelectorAll('#structBody .card').forEach((card, index) => {
-        card.dataset.index = index; 
-        
-        // Drag Start
-        card.addEventListener('dragstart', (e) => {
-            dragSrcEl = card;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', index); 
-            card.classList.add('dragging');
-        });
-        
-        // Drag Over
-        card.addEventListener('dragover', (e) => {
-            e.preventDefault(); 
-            e.dataTransfer.dropEffect = 'move';
-            card.classList.add('drag-over');
-        });
-
-        // Drag Leave
-        card.addEventListener('dragleave', () => {
-            card.classList.remove('drag-over');
-        });
-        
-        // Drag End
-        card.addEventListener('dragend', () => {
-            document.querySelectorAll('#structBody .card').forEach(c => {
-                c.classList.remove('dragging', 'drag-over');
-            });
-        });
-
-        // Drop
-        card.addEventListener('drop', (e) => {
-            e.stopPropagation();
-            card.classList.remove('drag-over');
+    document.querySelectorAll('#structBody .card').forEach(card => {
+        card.addEventListener('drop', async (e) => { // async 추가
             
             const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
             const toIndex = parseInt(card.dataset.index, 10);
@@ -663,7 +709,7 @@ function attachEditListeners(){
                 const [movedItem] = s.slots.splice(fromIndex, 1);
                 s.slots.splice(toIndex, 0, movedItem);
                 
-                saveFlowsToLS(flows);
+                await saveFlowsToDB(flows); // ✨ DB에 저장
                 renderStructure(); 
             }
         });
@@ -673,11 +719,11 @@ function attachEditListeners(){
 
 let structPinMode=false;
 $('structPinMode').addEventListener('change', e=>{ structPinMode = e.target.checked; });
-$('btnStructClearPins').addEventListener('click', ()=>{ setStructPins([]); renderStructPinLayer(); });
+$('btnStructClearPins').addEventListener('click', async ()=>{ await setStructPins([]); renderStructPinLayer(); }); // async 추가
 
 function renderStructPinLayer(){
   const layer = $('structPinLayer'); layer.innerHTML='';
-  const list = structPins();
+  const list = structPins(); // 동기적으로 로컬 캐시 사용
   list.forEach((p,idx)=>{
     const pin = document.createElement('div');
     pin.className='pin'; pin.innerText=String(idx+1);
@@ -686,13 +732,13 @@ function renderStructPinLayer(){
     note.className='pinNote'; note.textContent=p.text||'(메모 없음)'; note.style.display='none';
     pin.addEventListener('mouseenter', ()=>{ note.style.display='block'; });
     pin.addEventListener('mouseleave', ()=>{ note.style.display='none'; });
-    pin.addEventListener('click', (ev)=>{
+    pin.addEventListener('click', async (ev)=>{ // async 추가
       ev.stopPropagation();
       const v = prompt('핀 수정 (비우면 삭제)', p.text||'');
       if(v===null) return;
       const arr=list.slice();
-      if(v.trim()===''){ setStructPins(arr.filter(x=>x.id!==p.id)); }
-      else { p.text=v.trim(); setStructPins(arr); }
+      if(v.trim()===''){ await setStructPins(arr.filter(x=>x.id!==p.id)); } // ✨ DB에 저장
+      else { p.text=v.trim(); await setStructPins(arr); } // ✨ DB에 저장
       renderStructPinLayer();
     });
     const wrap=document.createElement('div');
@@ -701,7 +747,7 @@ function renderStructPinLayer(){
     layer.appendChild(wrap);
   });
 }
-$('structPanel').addEventListener('click', (e)=>{
+$('structPanel').addEventListener('click', async (e)=>{ // async 추가
   if(!structPinMode) return;
   if(e.target.closest('.structTools') || e.target.closest('.card') || e.target.closest('#stepTitle') || e.target.closest('#stepBody') || e.target.closest('.slot-tools')) return; 
   
@@ -712,24 +758,36 @@ $('structPanel').addEventListener('click', (e)=>{
   if(text===null) return;
   const list = structPins();
   list.push({id:uuid(), x:+x.toFixed(2), y:+y.toFixed(2), text:text.trim()});
-  setStructPins(list); renderStructPinLayer();
+  await setStructPins(list); renderStructPinLayer(); // ✨ DB에 저장
   
-  // ✨ UX 개선: 핀 추가 후 모드 자동 해제
   structPinMode = false;
   $('structPinMode').checked = false;
 });
 /* Live: Iframe + Images */
-function getSrc(){ return localStorage.getItem(STORAGE.SRC) || ''; }
-function setSrc(v){
-  localStorage.setItem(STORAGE.SRC, v);
-  $('srcStatus').innerText='현재: '+(v||'연결되지 않음');
-  if(v){ 
-    $('liveFrame').src=v; 
-    localStorage.setItem(STORAGE.MODE, 'iframe'); 
-  }
+// V10.0: getSrc는 로컬 스토리지에 캐시된 데이터를 사용
+function getSrc(){ 
+  const src = getLS(STORAGE.SRC, '') || '';
+  if(!src) return '';
+  // V10.0: 임시 Blob URL이 남아있다면 Base64 원본으로 대체 (Export/Import 시 Base64가 아니면 의미 없음)
+  if (src.startsWith('blob:')) return ''; 
+  return src;
 }
-$('applySrc').onclick=()=>{ const v=$('srcText').value.trim(); if(v) setSrc(v); updateLiveMode(localStorage.getItem(STORAGE.MODE)); }; 
-$('srcFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(!f) return; setSrc(URL.createObjectURL(f)); updateLiveMode('iframe'); }); 
+$('applySrc').onclick=async ()=>{ // async 추가
+  const v=$('srcText').value.trim(); 
+  if(v){ 
+    await setSrcToDB(v); // ✨ DB에 저장
+    setLS(STORAGE.SRC, v);
+  }
+  updateLiveMode(localStorage.getItem(STORAGE.MODE)); 
+}; 
+$('srcFile').addEventListener('change', async e=>{ // async 추가
+  const f=e.target.files[0]; 
+  if(!f) return; 
+  const url = URL.createObjectURL(f);
+  await setSrcToDB(url); // ✨ DB에 임시 저장 (휘발성)
+  setLS(STORAGE.SRC, url);
+  updateLiveMode('iframe'); 
+}); 
 
 function liveHashForStep(flowKey, stepIdx){
   const f=flows.find(x=>x.key===flowKey); const key=f.map[stepIdx];
@@ -745,21 +803,35 @@ function navIframe(){
   try{ $('liveFrame').contentWindow.location.hash=hash; }catch(e){}
 }
 /* 이미지 매핑 */
+// V10.0: 이미지 객체는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
 function ensureImgObj(){
-  const o=getLS(STORAGE.IMGS, {}); const k=activeFlow().key;
+  let o = getLS(STORAGE.IMGS, {}); 
+  if (!o || Object.keys(o).length === 0) {
+      o = {}; // 로컬 스토리지에 없으면 빈 객체로 초기화
+  }
+  const k=activeFlow().key;
   if(!o[k]) o[k]={ stepMap:{}, gallery:[] };
-  setLS(STORAGE.IMGS,o); return o;
+  // DB 저장은 setImagesToDB()에서만 호출
+  return o;
 }
 function imgForStep(flowKey, stepIdx){
-  const o=getLS(STORAGE.IMGS, {}); return o?.[flowKey]?.stepMap?.[stepIdx] || '';
+  const o=getLS(STORAGE.IMGS, {}); 
+  const base64 = o?.[flowKey]?.stepMap?.[stepIdx] || '';
+  return base64ToUrl(base64); 
 }
+// V10.0: assignImages 수정 (DB 저장 로직 포함)
 function assignImages(urls, start){
   const o=ensureImgObj(); const k=activeFlow().key; const d=o[k];
   d.gallery = (d.gallery||[]).concat(urls);
   let s=start; urls.forEach(u=>{ if(s<flowLen()){ d.stepMap[s]=u; s++; } });
+  
   setLS(STORAGE.IMGS, o); 
+  setImagesToDB(o); // ✨ DB에 저장
+  
   localStorage.setItem(STORAGE.MODE, 'images');
-  setSrc(''); 
+  setSrcToDB(''); // ✨ DB에 저장
+  setLS(STORAGE.SRC, '');
+  
   updateLiveMode('images');
   renderThumbs(); renderImages();
 }
@@ -776,7 +848,13 @@ function renderThumbs(){
     el.innerHTML = (url?`<button class="del">x</button><img src="${url}">`:'') +
                    `<div class="cap">Step ${i+1}<br>${steps[i].title}${url?'':'<br>(비어 있음)'}</div>`;
     
-    el.querySelector('.del')?.addEventListener('click', ev=>{ ev.stopPropagation(); delete d.stepMap[i]; setLS(STORAGE.IMGS,o); renderThumbs(); renderImages(); saveState(); }); 
+    el.querySelector('.del')?.addEventListener('click', async ev=>{ // async 추가
+        ev.stopPropagation(); 
+        delete d.stepMap[i]; 
+        setLS(STORAGE.IMGS,o); 
+        await setImagesToDB(o); // ✨ DB에 저장
+        renderThumbs(); renderImages(); saveState(); 
+    }); 
     el.addEventListener('click', (e)=>{ 
       if(e.target.classList.contains('del')) return;
       currentStep = i; 
@@ -784,16 +862,15 @@ function renderThumbs(){
       saveState();
     });
     // 썸네일 드래그앤드롭 이벤트 리스너 (순서 변경)
-    el.addEventListener('dragstart', ev=>{ ev.dataTransfer.setData('text/plain', i.toString()); el.classList.add('dragging'); });
-    el.addEventListener('dragend',   ev=>{ el.classList.remove('dragging'); });
-    el.addEventListener('dragover',  ev=>{ ev.preventDefault(); el.classList.add('drag-over'); });
-    el.addEventListener('dragleave', ev=>{ el.classList.remove('drag-over'); });
-    el.addEventListener('drop',      ev=>{
+    el.addEventListener('drop', async ev=>{ // async 추가
       ev.preventDefault(); el.classList.remove('drag-over');
       const from=parseInt(ev.dataTransfer.getData('text/plain'),10), to=i;
       const a=d.stepMap[from], b=d.stepMap[to];
       if(a===undefined && b===undefined) return;
-      d.stepMap[from]=b; d.stepMap[to]=a; setLS(STORAGE.IMGS,o); renderThumbs(); renderImages(); saveState(); 
+      d.stepMap[from]=b; d.stepMap[to]=a; 
+      setLS(STORAGE.IMGS,o); 
+      await setImagesToDB(o); // ✨ DB에 저장
+      renderThumbs(); renderImages(); saveState(); 
     });
     list.appendChild(el);
   }
@@ -806,45 +883,61 @@ $('imgFiles').addEventListener('change', e=>{
   const urls=files.map(f=>URL.createObjectURL(f));
   assignImages(urls, currentStep);
 });
-$('btnAssignFromCurrent').onclick=()=>{
+$('btnAssignFromCurrent').onclick=async ()=>{ // async 추가
   const o=ensureImgObj(); const k=activeFlow().key; const d=o[k];
   if(!d.gallery || !d.gallery.length){ alert('먼저 이미지를 선택하세요.'); return; }
   d.stepMap={}; let s=currentStep; d.gallery.forEach(u=>{ if(s<flowLen()){ d.stepMap[s]=u; s++; } });
   setLS(STORAGE.IMGS,o); 
+  await setImagesToDB(o); // ✨ DB에 저장
+  
   localStorage.setItem(STORAGE.MODE, 'images');
-  setSrc('');
+  await setSrcToDB(''); // ✨ DB에 저장
+  setLS(STORAGE.SRC, '');
+  
   updateLiveMode('images'); 
   renderThumbs(); renderImages();
   saveState();
 };
-$('btnClearMap').onclick=()=>{ const o=ensureImgObj(); o[activeFlow().key].stepMap={}; setLS(STORAGE.IMGS,o); renderThumbs(); renderImages(); saveState(); }; 
+$('btnClearMap').onclick=async ()=>{ // async 추가
+  const o=ensureImgObj(); 
+  o[activeFlow().key].stepMap={}; 
+  setLS(STORAGE.IMGS,o); 
+  await setImagesToDB(o); // ✨ DB에 저장
+  renderThumbs(); renderImages(); saveState(); 
+}; 
 
 /* 이미지 핀 (Live 이미지 창 기능) */
-function pinsObj(){ return getLS(STORAGE.PINS, {}); }
-function setPinsObj(x){ setLS(STORAGE.PINS, x); }
-function getPins(flowKey=activeFlow().key, step=currentStep){
-  const o=pinsObj(); if(!o[flowKey]) o[flowKey]={}; if(!o[flowKey][step]) o[flowKey][step]=[]; setPinsObj(o); return o[flowKey][step];
+// V10.0: 핀 데이터는 DB에서 불러온 후 로컬 스토리지에 캐시된 데이터를 사용
+async function getPins(flowKey=activeFlow().key, step=currentStep){
+  const o = getLS(STORAGE.PINS, {});
+  if(!o[flowKey]) o[flowKey]={}; 
+  if(!o[flowKey][step]) o[flowKey][step]=[];
+  return o[flowKey][step];
 }
-function savePins(list, flowKey=activeFlow().key, step=currentStep){
-  const o=pinsObj(); if(!o[flowKey]) o[flowKey]={}; o[flowKey][step]=list; setPinsObj(o);
+async function savePins(list, flowKey=activeFlow().key, step=currentStep){
+  const o=getLS(STORAGE.PINS, {}); 
+  if(!o[flowKey]) o[flowKey]={}; 
+  o[flowKey][step]=list; 
+  setLS(STORAGE.PINS, o); 
+  await setPinsToDB(o); // ✨ DB에 영구 저장
   saveState();
 }
 let pinMode=false;
 $('pinMode').addEventListener('change', e=>{ 
     pinMode = e.target.checked; 
 });
-$('btnClearPins').addEventListener('click', ()=>{ savePins([]); renderPins(); });
+$('btnClearPins').addEventListener('click', async ()=>{ await savePins([]); renderPins(); }); // async 추가
 
-$('imgBoard').addEventListener('click', (e)=>{
+$('imgBoard').addEventListener('click', async (e)=>{ // async 추가
   if(!pinMode) return;
   if(!imgForStep(activeFlow().key, currentStep)){ alert('이 단계에 이미지가 없습니다.'); return; }
   const rect=$('imgBoard').getBoundingClientRect();
   const x=((e.clientX-rect.left)/rect.width)*100, y=((e.clientY-rect.top)/rect.height)*100;
   const text=prompt('핀 설명을 입력하세요:'); if(text===null) return;
-  const list=getPins(); list.push({id:uuid(), x:+x.toFixed(2), y:+y.toFixed(2), text:text.trim()});
-  savePins(list); renderPins();
+  const list=await getPins(); // await 추가
+  list.push({id:uuid(), x:+x.toFixed(2), y:+y.toFixed(2), text:text.trim()});
+  await savePins(list); renderPins(); // ✨ DB에 저장
 
-  // ✨ UX 개선: 핀 추가 후 모드 자동 해제
   pinMode = false;
   $('pinMode').checked = false;
 });
@@ -861,11 +954,11 @@ function renderPinLayer(layerId, list){
     const note=document.createElement('div'); note.className='pinNote'; note.textContent=p.text||'(설명 없음)'; note.style.display='none';
     pin.addEventListener('mouseenter', ()=>{ note.style.display='block'; });
     pin.addEventListener('mouseleave', ()=>{ note.style.display='none'; });
-    pin.addEventListener('click', (ev)=>{
+    pin.addEventListener('click', async (ev)=>{ // async 추가
       ev.stopPropagation();
       const v=prompt('핀 수정 (비우면 삭제)', p.text||''); if(v===null) return;
       const arr=list.slice();
-      if(v.trim()===''){ savePins(arr.filter(x=>x.id!==p.id)); } else { p.text=v.trim(); savePins(arr); }
+      if(v.trim()===''){ await savePins(arr.filter(x=>x.id!==p.id)); } else { p.text=v.trim(); await savePins(arr); } // ✨ DB에 저장
       renderPins();
     });
     const wrap=document.createElement('div'); wrap.style.position='absolute'; wrap.style.left=p.x+'%'; wrap.style.top=p.y+'%'; wrap.style.transform='translate(-50%,-50%)';
@@ -916,8 +1009,16 @@ $('btnExportImage').addEventListener('click', ()=>{
         alert('캡처에 실패했습니다. (콘솔 로그 확인)');
     });
 });
+
 /* V8.0: 작업 저장 (Export) 기능 - Base64 -> LZ-String 압축 적용 */
 $('btnExportWork').addEventListener('click', async () => {
+    // V10.0: DB에서 최신 데이터 불러와 로컬 스토리지에 캐시
+    const flowData = await loadFlowsFromDB();
+    const pinsData = await getPinsFromDB();
+    const structPinsData = await getStructPinsFromDB();
+    const srcData = await getSrcFromDB();
+    const imgsData = await getImagesFromDB(); // 이미지 데이터는 Blob URL이 아닌 Base64 원본을 포함함
+
     const loadingOverlay = $('loadingOverlay');
     const progressBar = $('progressBar');
     const progressText = $('progressText');
@@ -935,20 +1036,27 @@ $('btnExportWork').addEventListener('click', async () => {
     const data = {};
     const imagesToConvert = [];
     let failureCount = 0;
+    const base64Map = {};
 
-    // 1. 모든 핵심 데이터 수집
-    STORAGE.ALL_KEYS.forEach(key => {
-        data[key] = localStorage.getItem(key);
-    });
+    // 1. 모든 핵심 데이터 수집 (Firebase에서 불러온 최신 데이터 사용)
+    data[STORAGE.FLOWS] = JSON.stringify(flowData);
+    data[STORAGE.PINS] = JSON.stringify(pinsData);
+    data[STORAGE.SPINS] = JSON.stringify(structPinsData);
+    data[STORAGE.SRC] = JSON.stringify(srcData);
+    data[STORAGE.IMGS] = JSON.stringify(imgsData);
+    
+    // 로컬 상태만 유지
+    data[STORAGE.ORDER] = localStorage.getItem(STORAGE.ORDER);
+    data[STORAGE.MODE] = localStorage.getItem(STORAGE.MODE);
+    data[STORAGE.STATE] = localStorage.getItem(STORAGE.STATE);
 
-    // 2. 이미지 데이터(IMGS)에서 Blob URL을 Base64로 변환할 목록 수집
+    // 2. 이미지 데이터(IMGS)에서 Blob URL을 Base64로 변환할 목록 수집 (로컬에만 남아있는 임시 데이터 처리)
     try {
-        const imgsData = JSON.parse(data[STORAGE.IMGS] || '{}');
-        for (const flowKey in imgsData) {
-            const flowData = imgsData[flowKey];
+        const currentImgsData = getLS(STORAGE.IMGS, {});
+        for (const flowKey in currentImgsData) {
+            const flowData = currentImgsData[flowKey];
             if (flowData && flowData.gallery) {
                 flowData.gallery.forEach(url => {
-                    // Blob URL만 변환 대상
                     if (url && url.startsWith('blob:')) {
                         imagesToConvert.push(url);
                     }
@@ -956,14 +1064,14 @@ $('btnExportWork').addEventListener('click', async () => {
             }
         }
     } catch (e) {
-        console.error("Error parsing IMGS data for export:", e);
+        console.error("Error parsing current IMGS data for export:", e);
     }
     
     const uniqueUrls = [...new Set(imagesToConvert)];
     
     // 3. Blob URL -> Base64 (압축 포함) 변환 실행
-    const base64Map = {};
     if (uniqueUrls.length > 0) {
+        
         loadingTitle.textContent = `이미지 ${uniqueUrls.length}개 변환 및 압축 시작`;
         
         try {
@@ -987,7 +1095,6 @@ $('btnExportWork').addEventListener('click', async () => {
                 if (result.error) {
                     failureCount++;
                 } else {
-                    // Base64Map에는 '원본 Blob URL' -> '압축된 Base64'로 저장
                     base64Map[result.url] = result.base64;
                 }
             });
@@ -1007,9 +1114,9 @@ $('btnExportWork').addEventListener('click', async () => {
     }
 
     // 4. IMGS 데이터 내의 모든 Blob URL을 압축된 Base64 문자열로 대체
-    let finalImgsData = JSON.parse(data[STORAGE.IMGS] || '{}');
-    for (const flowKey in finalImgsData) {
-        const flowData = finalImgsData[flowKey];
+    let exportImgsData = JSON.parse(data[STORAGE.IMGS] || '{}');
+    for (const flowKey in exportImgsData) {
+        const flowData = exportImgsData[flowKey];
         if (flowData) {
             // gallery URL 대체
             if (flowData.gallery) {
@@ -1026,7 +1133,7 @@ $('btnExportWork').addEventListener('click', async () => {
     }
     
     // 5. 최종 데이터에 업데이트된 IMGS 저장 및 파일 다운로드
-    data[STORAGE.IMGS] = JSON.stringify(finalImgsData);
+    data[STORAGE.IMGS] = JSON.stringify(exportImgsData);
     
     const dataStr = JSON.stringify(data, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -1067,57 +1174,29 @@ $('workFile').addEventListener('change', (e) => {
     }
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = async function(event) { // async 추가
         try {
             const importedData = JSON.parse(event.target.result);
             
-            // 1. IMGS 데이터에서 Base64 (압축 포함)를 Blob URL로 복원
-            let restoredImgsData = JSON.parse(importedData[STORAGE.IMGS] || '{}');
-            const urlMap = {}; // Import 과정 중 복원된 Base64 -> Blob URL 맵
-
-            for (const flowKey in restoredImgsData) {
-                const flowData = restoredImgsData[flowKey];
-                if (flowData) {
-                    // gallery URL 복원
-                    if (flowData.gallery) {
-                        flowData.gallery = flowData.gallery.map(compressedBase64 => {
-                            // Base64 또는 압축된 Base64일 경우에만 복원 시도
-                            if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                                if (!urlMap[compressedBase64]) {
-                                    urlMap[compressedBase64] = base64ToUrl(compressedBase64);
-                                }
-                                return urlMap[compressedBase64];
-                            }
-                            return compressedBase64;
-                        });
-                    }
-                    // stepMap URL 복원
-                    if (flowData.stepMap) {
-                        for (const step in flowData.stepMap) {
-                            const compressedBase64 = flowData.stepMap[step];
-                            if (compressedBase64 && (compressedBase64.startsWith('data:') || compressedBase64.startsWith('LZ+'))) {
-                                // Gallery 처리 과정에서 이미 Blob URL이 생성되었거나, 새로 복원
-                                if (!urlMap[compressedBase64]) {
-                                    urlMap[compressedBase64] = base64ToUrl(compressedBase64);
-                                }
-                                flowData.stepMap[step] = urlMap[compressedBase64];
-                            }
-                        }
-                    }
+            // 1. 모든 데이터를 Firebase에 덮어쓰기
+            const promises = STORAGE.ALL_KEYS.map(key => {
+                if (importedData[key] !== undefined) {
+                    let value = JSON.parse(importedData[key]);
+                    return setDB(key, value); // DB에 직접 저장
                 }
-            }
-            
-            // 2. 복원된 IMGS 데이터를 임포트 데이터에 업데이트
-            importedData[STORAGE.IMGS] = JSON.stringify(restoredImgsData);
+                return Promise.resolve();
+            });
 
-            // 3. 로컬 스토리지에 모든 데이터 덮어쓰기
+            await Promise.all(promises);
+
+            // 2. 로컬 스토리지에 임시 상태 복원 (Import 후 새로고침 시 Firebase에서 데이터를 다시 불러올 것임)
             STORAGE.ALL_KEYS.forEach(key => {
                 if (importedData[key] !== undefined) {
                     localStorage.setItem(key, importedData[key]);
                 }
             });
 
-            alert('작업 데이터 및 이미지가 성공적으로 불러와졌습니다. 페이지를 새로고침하여 적용합니다.');
+            alert('작업 데이터 및 이미지가 Firebase에 성공적으로 저장되었습니다. 페이지를 새로고침하여 적용합니다.');
             window.location.reload(); 
 
         } catch (error) {
@@ -1130,7 +1209,7 @@ $('workFile').addEventListener('change', (e) => {
 
 
 /* 기타 편집 기능 (재인덱싱 로직 등은 유지) */
-function shiftAfterDelete(flowKey, delIdx){
+async function shiftAfterDelete(flowKey, delIdx){ // async 추가
   const o = getLS(STORAGE.IMGS, {});
   if(o?.[flowKey]?.stepMap){
     const m = o[flowKey].stepMap, nm = {};
@@ -1141,6 +1220,7 @@ function shiftAfterDelete(flowKey, delIdx){
     });
     o[flowKey].stepMap = nm;
     setLS(STORAGE.IMGS, o);
+    await setImagesToDB(o); // ✨ DB에 저장
   }
   const p = getLS(STORAGE.PINS, {});
   if(p?.[flowKey]){
@@ -1151,6 +1231,7 @@ function shiftAfterDelete(flowKey, delIdx){
       else if(i > delIdx) np[i-1]=p[flowKey][i];
     });
     setLS(STORAGE.PINS, p);
+    await setPinsToDB(p); // ✨ DB에 저장
   }
   const sp = getLS(STORAGE.SPINS, {});
   if(sp?.[flowKey]){
@@ -1161,10 +1242,11 @@ function shiftAfterDelete(flowKey, delIdx){
       else if(i > delIdx) nsp[i-1]=sp[flowKey][i];
     });
     setLS(STORAGE.SPINS, sp);
+    await setStructPinsToDB(sp); // ✨ DB에 저장
   }
   saveState();
 }
-function shiftAfterInsert(flowKey, insIdx){
+async function shiftAfterInsert(flowKey, insIdx){ // async 추가
   const o = getLS(STORAGE.IMGS, {});
   if(o?.[flowKey]?.stepMap){
     const m = o[flowKey].stepMap;
@@ -1174,6 +1256,7 @@ function shiftAfterInsert(flowKey, insIdx){
     });
     o[flowKey].stepMap = nm;
     setLS(STORAGE.IMGS, o);
+    await setImagesToDB(o); // ✨ DB에 저장
   }
   const p = getLS(STORAGE.PINS, {});
   if(p?.[flowKey]){
@@ -1183,6 +1266,7 @@ function shiftAfterInsert(flowKey, insIdx){
     });
     p[flowKey] = np; 
     setLS(STORAGE.PINS, p);
+    await setPinsToDB(p); // ✨ DB에 저장
   }
   const sp = getLS(STORAGE.SPINS, {});
   if(sp?.[flowKey]){
@@ -1192,18 +1276,20 @@ function shiftAfterInsert(flowKey, insIdx){
     });
     sp[flowKey] = nsp;
     setLS(STORAGE.SPINS, sp);
+    await setStructPinsToDB(sp); // ✨ DB에 저장
   }
   saveState(); 
 }
 
 // 단계 데이터 복제 (이미지, 핀, 구조 핀)
-function cloneStepData(flowKey, fromIdx, toIdx) {
+async function cloneStepData(flowKey, fromIdx, toIdx) { // async 추가
     // 1. Image Map Clone
     const o = getLS(STORAGE.IMGS, {});
     if (o?.[flowKey]?.stepMap && o[flowKey].stepMap[fromIdx]) {
         if(!o[flowKey].stepMap) o[flowKey].stepMap = {};
         o[flowKey].stepMap[toIdx] = o[flowKey].stepMap[fromIdx];
         setLS(STORAGE.IMGS, o);
+        await setImagesToDB(o); // ✨ DB에 저장
     }
     // 2. Pins Clone
     const p = getLS(STORAGE.PINS, {});
@@ -1211,6 +1297,7 @@ function cloneStepData(flowKey, fromIdx, toIdx) {
         if(!p[flowKey]) p[flowKey] = {};
         p[flowKey][toIdx] = JSON.parse(JSON.stringify(p[flowKey][fromIdx]));
         setLS(STORAGE.PINS, p);
+        await setPinsToDB(p); // ✨ DB에 저장
     }
     // 3. Structure Pins Clone
     const sp = getLS(STORAGE.SPINS, {});
@@ -1218,6 +1305,7 @@ function cloneStepData(flowKey, fromIdx, toIdx) {
         if(!sp[flowKey]) sp[flowKey] = {};
         sp[flowKey][toIdx] = JSON.parse(JSON.stringify(sp[flowKey][fromIdx]));
         setLS(STORAGE.SPINS, sp);
+        await setStructPinsToDB(sp); // ✨ DB에 저장
     }
 }
 
@@ -1257,13 +1345,13 @@ function buildFlowList(){
     el.addEventListener('dragend',   ev=>{ el.classList.remove('dragging'); });
     el.addEventListener('dragover',  ev=>{ ev.preventDefault(); el.classList.add('drag-over'); });
     el.addEventListener('dragleave', ev=>{ el.classList.remove('drag-over'); });
-    el.addEventListener('drop',      ev=>{
+    el.addEventListener('drop',      async ev=>{ // async 추가
       ev.preventDefault(); el.classList.remove('drag-over');
       const from=parseInt(ev.dataTransfer.getData('text/plain'),10), to=idx;
       if(from===to) return;
       const item=flows.splice(from,1)[0]; flows.splice(to,0,item);
       setLS(STORAGE.ORDER, flows.map(x=>x.key));
-      saveFlowsToLS(flows);
+      await saveFlowsToDB(flows); // ✨ DB에 저장
       
       if(currentFlowIdx === from) currentFlowIdx = to;
       else if(currentFlowIdx > from && currentFlowIdx <= to) currentFlowIdx--;
@@ -1287,7 +1375,7 @@ function selectFlow(idx){
 /* 플로우 편집: 추가/이름변경/삭제 */
 const DEFAULT_STEP_COUNT = 5; 
 
-$('btnAddFlow').addEventListener('click', ()=>{
+$('btnAddFlow').addEventListener('click', async ()=>{ // async 추가
     const title = (prompt(`새로운 플로우 이름? (기본 ${DEFAULT_STEP_COUNT}단계 생성)`)||'').trim();
     if(!title) return;
     
@@ -1314,7 +1402,7 @@ $('btnAddFlow').addEventListener('click', ()=>{
     };
     
     flows.push(newFlow);
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     currentFlowIdx = flows.length - 1;
     currentStep = 0;
     buildFlowList();
@@ -1322,38 +1410,29 @@ $('btnAddFlow').addEventListener('click', ()=>{
     saveState();
 });
 
-$('btnRenameFlow').addEventListener('click', ()=>{
+$('btnRenameFlow').addEventListener('click', async ()=>{ // async 추가
     const f = activeFlow();
     const next = (prompt('플로우 이름 변경:', f.title)||'').trim();
     if(!next) return;
     f.title = next;
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     buildFlowList();
     renderAll();
     saveState();
 });
 
-$('btnDeleteFlow').addEventListener('click', ()=>{
+$('btnDeleteFlow').addEventListener('click', async ()=>{ // async 추가
     if(flows.length <= 1){ alert('최소 1개의 플로우는 필요합니다.'); return; }
     const f = activeFlow();
     if(!confirm(`플로우 "${f.title}" (총 ${f.steps.length} 단계)를 정말로 삭제할까요?`)) return;
     
-    const flowKeyToDelete = f.key;
-    const cleanLS = (key, flowKey) => {
-        const o = getLS(key, {});
-        delete o[flowKey];
-        setLS(key, o);
-    };
-    cleanLS(STORAGE.IMGS, flowKeyToDelete);
-    cleanLS(STORAGE.PINS, flowKeyToDelete);
-    cleanLS(STORAGE.SPINS, flowKeyToDelete);
-
-
+    // V10.0: DB에는 merge: true로 업데이트되므로, FLOWS만 삭제하고 나머지 데이터는 다음 단계에서 정리
+    
     flows.splice(currentFlowIdx, 1);
     if(currentFlowIdx >= flows.length) currentFlowIdx = flows.length - 1;
     currentStep = 0; 
     
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     buildFlowList();
     renderAll();
     saveState();
@@ -1369,13 +1448,13 @@ function renderAll(){
   updateLiveMode(localStorage.getItem(STORAGE.MODE));
 }
 /* 단계 편집: 추가/복제/이름변경/삭제 */
-function addNewStep(){
+$('btnStepAdd').addEventListener('click', async ()=>{ // async 추가
     const f = activeFlow();
     const title = (prompt('새 단계 이름?', 'New Step')||'').trim();
     if(!title) return;
     const body  = (prompt('설명(선택):', '')||'').trim();
     const insertAt = currentStep+1;
-    shiftAfterInsert(f.key, insertAt);
+    await shiftAfterInsert(f.key, insertAt); // ✨ DB 저장 포함
     f.steps.splice(insertAt, 0, { 
         title, 
         body: body||'설명 없음', 
@@ -1386,12 +1465,12 @@ function addNewStep(){
         ]
     });
     f.map.splice(insertAt, 0, f.map[currentStep] || 'home');
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     currentStep = insertAt;
     renderAll(); navIframe(); saveState();
-}
+});
 
-function cloneStep() {
+$('btnStepClone').addEventListener('click', async ()=>{ // async 추가
     const f = activeFlow();
     const s = activeStepData();
     
@@ -1401,53 +1480,49 @@ function cloneStep() {
     const currentIdx = currentStep;
     const insertAt = currentStep + 1;
     
-    shiftAfterInsert(f.key, insertAt);
+    await shiftAfterInsert(f.key, insertAt); // ✨ DB 저장 포함
 
     const newStep = JSON.parse(JSON.stringify(s));
     newStep.title = cloneTitle;
 
     f.steps.splice(insertAt, 0, newStep);
     f.map.splice(insertAt, 0, f.map[currentIdx] || 'home'); 
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
 
-    cloneStepData(f.key, currentIdx, insertAt);
+    await cloneStepData(f.key, currentIdx, insertAt); // ✨ DB 저장 포함
 
     currentStep = insertAt;
     renderAll(); navIframe(); saveState();
-}
+});
 
 
-function renameStep(){
+$('btnStepRename').addEventListener('click', async ()=>{ // async 추가
     const f = activeFlow();
     const s = f.steps[currentStep];
     const next = (prompt('단계 이름 변경:', s.title)||'').trim();
     if(!next) return;
     s.title = next;
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     renderAll(); saveState();
-}
-function deleteStep(){
+});
+$('btnStepDelete').addEventListener('click', async ()=>{ // async 추가
     const f = activeFlow();
     if(f.steps.length<=1){ alert('최소 1단계는 필요합니다.'); return; }
     if(!confirm(`현재 단계 "${f.steps[currentStep].title}" 를 삭제할까요?`)) return;
     const delIdx = currentStep;
-    shiftAfterDelete(f.key, delIdx);
+    await shiftAfterDelete(f.key, delIdx); // ✨ DB 저장 포함
     f.steps.splice(delIdx,1);
     f.map.splice(delIdx,1);
     if(currentStep>=f.steps.length) currentStep=f.steps.length-1;
-    saveFlowsToLS(flows);
+    await saveFlowsToDB(flows); // ✨ DB에 저장
     renderAll(); navIframe(); saveState();
-}
-
-$('btnStepAdd').addEventListener('click', addNewStep);
-$('btnStepClone').addEventListener('click', cloneStep); 
-$('btnStepRename').addEventListener('click', renameStep);
-$('btnStepDelete').addEventListener('click', deleteStep);
+});
 
 
 /* 초기 시작 */
-(function init(){
-  initFlows();
+// V10.0: 메인 함수를 비동기로 변경
+(async function init(){
+  await initFlows(); // ✨ DB에서 데이터가 로드될 때까지 기다림
   buildFlowList();
   
   const src = getSrc(); 
